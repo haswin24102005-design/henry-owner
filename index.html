@@ -117,13 +117,8 @@
     updateDoc, increment
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // FIREBASE CONFIG
-  // These values are injected at build time by GitHub Actions.
-  // They are never hardcoded here. See .github/workflows/deploy.yml.
-  // ─────────────────────────────────────────────────────────────────────────────
   const firebaseConfig = {
-    apiKey:            "%%FIREBASE_API_KEY%%",
+    apiKey:             "%%FIREBASE_API_KEY%%",
     authDomain:        "%%FIREBASE_AUTH_DOMAIN%%",
     projectId:         "%%FIREBASE_PROJECT_ID%%",
     storageBucket:     "%%FIREBASE_STORAGE_BUCKET%%",
@@ -131,14 +126,6 @@
     appId:             "%%FIREBASE_APP_ID%%",
   };
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // ADMIN PASSWORD — stored as SHA-256 hash, never plaintext.
-  // To change your password:
-  //   1. Go to https://emn178.github.io/online-tools/sha256.html
-  //   2. Type your new password, copy the hash
-  //   3. Store the hash as GitHub Secret ADMIN_HASH
-  //   4. The build step below injects it here automatically
-  // ─────────────────────────────────────────────────────────────────────────────
   const ADMIN_HASH = "%%ADMIN_HASH%%";
 
   async function sha256(str) {
@@ -169,6 +156,17 @@
     const left   = document.getElementById("colLeft");
     const right  = document.getElementById("colRight");
     const bottom = document.getElementById("colBottom");
+
+    // Preserve UI states of reply boxes before overwriting DOM
+    const openReplyStates = {};
+    document.querySelectorAll(".reply-input-wrap").forEach(el => {
+      const postId = el.id.replace("reply-input-", "");
+      const txtArea = document.getElementById("reply-txt-" + postId);
+      if (el.classList.contains("open")) {
+        openReplyStates[postId] = txtArea ? txtArea.value : "";
+      }
+    });
+
     left.innerHTML = right.innerHTML = bottom.innerHTML = "";
 
     if (snap.empty) {
@@ -177,42 +175,43 @@
     }
 
     const ownPosts = getOwnPosts();
-    snap.docs.forEach((d, i) => {
+    let index = 0; // Fixes missing counter inside snapshot loop
+
+    snap.docs.forEach(d => {
       const p     = d.data();
       const ms    = p.ts?.toMillis?.() ?? Date.now();
       const liked = getLiked().includes(d.id);
       const likes = p.likes || 0;
       const isOwn = ownPosts.includes(d.id);
 
+      const isReplyOpen = openReplyStates[d.id] !== undefined;
+      const draftText = isReplyOpen ? openReplyStates[d.id] : "";
+
       const card = document.createElement("div");
       card.className = "card" + (isOwn ? " own-post" : "");
       card.id = "card-" + d.id;
       card.innerHTML = `
-        <button class="del">✕</button>
+        <button class="del" onclick="window.delSecret('${d.id}')">✕</button>
         <p class="secret-text">${esc(p.text)}</p>
         <div class="meta">${timeAgo(ms)}</div>
         <div class="card-actions">
-          <button class="btn-like${liked ? ' liked' : ''}" id="like-${d.id}">Like (${likes})</button>
-          <button class="btn-reply">Reply</button>
+          <button class="btn-like${liked ? ' liked' : ''}" id="like-${d.id}" onclick="window.likeSecret('${d.id}')">Like (${likes})</button>
+          <button class="btn-reply" onclick="window.toggleReply('${d.id}')">Reply</button>
         </div>
         <div class="replies-section" id="replies-${d.id}">
-          <div class="reply-input-wrap" id="reply-input-${d.id}">
-            <textarea placeholder="Reply anonymously… (write #takedown to report)" id="reply-txt-${d.id}"></textarea>
-            <button class="btn-send-reply" id="reply-btn-${d.id}">Send</button>
+          <div class="reply-input-wrap ${isReplyOpen ? 'open' : ''}" id="reply-input-${d.id}">
+            <textarea placeholder="Reply anonymously… (write #takedown to report)" id="reply-txt-${d.id}">${esc(draftText)}</textarea>
+            <button class="btn-send-reply" id="reply-btn-${d.id}" onclick="window.sendReply('${d.id}')">Send</button>
           </div>
           <div class="replies-list" id="replies-list-${d.id}"></div>
         </div>`;
 
-      card.querySelector('.del').addEventListener('click', () => delSecret(d.id));
-      card.querySelector('.btn-like').addEventListener('click', () => likeSecret(d.id));
-      card.querySelector('.btn-reply').addEventListener('click', () => toggleReply(d.id));
-      card.querySelector('.btn-send-reply').addEventListener('click', () => sendReply(d.id));
-
-      if (i % 3 === 0) left.appendChild(card);
-      else if (i % 3 === 1) right.appendChild(card);
+      if (index % 3 === 0) left.appendChild(card);
+      else if (index % 3 === 1) right.appendChild(card);
       else bottom.appendChild(card);
 
       loadReplies(d.id);
+      index++;
     });
   }, err => {
     document.getElementById("colBottom").innerHTML =
@@ -251,46 +250,48 @@
   }
   document.getElementById("postBtn").addEventListener("click", postSecret);
 
-  function toggleReply(postId) {
+  // Expose module scope interactions safely to inline handlers
+  window.toggleReply = function(postId) {
     const wrap = document.getElementById("reply-input-" + postId);
     if (!wrap) return;
     wrap.classList.toggle("open");
     if (wrap.classList.contains("open")) document.getElementById("reply-txt-" + postId)?.focus();
   }
 
-  async function sendReply(postId) {
+  window.sendReply = function(postId) {
     const txtEl = document.getElementById("reply-txt-" + postId);
     const btn   = document.getElementById("reply-btn-" + postId);
     if (!txtEl) return;
     const txt = txtEl.value.trim();
     if (!txt) return;
     btn.disabled = true; btn.textContent = "Sending…";
-    try {
-      await addDoc(collection(db, "secrets", postId, "replies"), { text: txt, ts: serverTimestamp() });
-      txtEl.value = "";
-      document.getElementById("reply-input-" + postId)?.classList.remove("open");
-      showToast(txt.toLowerCase().includes("#takedown") ? "Report submitted. Admin will review." : "Reply posted ✓");
-    } catch (e) { showToast("Error: " + e.code); }
-    btn.disabled = false; btn.textContent = "Send";
+    addDoc(collection(db, "secrets", postId, "replies"), { text: txt, ts: serverTimestamp() })
+      .then(() => {
+        txtEl.value = "";
+        document.getElementById("reply-input-" + postId)?.classList.remove("open");
+        showToast(txt.toLowerCase().includes("#takedown") ? "Report submitted. Admin will review." : "Reply posted ✓");
+      })
+      .catch(e => { showToast("Error: " + e.code); })
+      .finally(() => { btn.disabled = false; btn.textContent = "Send"; });
   }
 
-  async function likeSecret(postId) {
+  window.likeSecret = function(postId) {
     const liked = getLiked();
     if (liked.includes(postId)) return;
-    try {
-      await updateDoc(doc(db, "secrets", postId), { likes: increment(1) });
-      setLiked([...liked, postId]);
-      document.getElementById("like-" + postId)?.classList.add("liked");
-    } catch (e) { showToast("Error: " + e.code); }
+    updateDoc(doc(db, "secrets", postId), { likes: increment(1) })
+      .then(() => {
+        setLiked([...liked, postId]);
+        document.getElementById("like-" + postId)?.classList.add("liked");
+      })
+      .catch(e => { showToast("Error: " + e.code); });
   }
 
-  async function delSecret(id) {
+  window.delSecret = function(id) {
     if (!document.body.classList.contains("admin")) return;
-    try { await deleteDoc(doc(db, "secrets", id)); }
-    catch (e) { showToast("Delete failed: " + e.code); }
+    if (!confirm("Delete this secret?")) return;
+    deleteDoc(doc(db, "secrets", id)).catch(e => { showToast("Delete failed: " + e.code); });
   }
 
-  // Hidden admin unlock: tap footer 5× rapidly
   let taps = 0, tapTimer;
   document.getElementById("footer").addEventListener("click", async () => {
     taps++; clearTimeout(tapTimer);
@@ -326,6 +327,7 @@
   let toastT;
   function showToast(msg) {
     const t = document.getElementById("toast");
+    if(!t) return;
     t.textContent = msg; t.classList.add("show");
     clearTimeout(toastT);
     toastT = setTimeout(() => t.classList.remove("show"), 2800);
