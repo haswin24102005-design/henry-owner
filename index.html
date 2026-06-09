@@ -13,52 +13,76 @@
       color: #e8e8e8;
       font-family: 'Inter', sans-serif;
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
-    header {
-      text-align: center;
-      padding: 60px 20px 40px;
+    /* ── PAGE GRID ── */
+    .page {
+      display: grid;
+      grid-template-columns: 1fr 400px 1fr;
+      grid-template-rows: auto auto auto;
+      min-height: 100vh;
+      gap: 0;
     }
-    header h1 {
+
+    /* ── HEADER spans full width ── */
+    .header {
+      grid-column: 1 / 4;
+      text-align: center;
+      padding: 44px 20px 20px;
+    }
+    .header h1 {
       font-family: 'Playfair Display', serif;
-      font-size: 2.2rem;
+      font-size: 2rem;
       color: #fff;
     }
-    header h1 span { color: #a78bfa; }
-    header p { margin-top: 8px; color: #555; font-size: 0.88rem; }
+    .header h1 span { color: #a78bfa; }
+    .header p { margin-top: 6px; color: #444; font-size: 0.82rem; }
 
-    .box {
-      max-width: 560px;
-      margin: 0 auto;
-      padding: 0 20px 50px;
+    /* ── CENTER POST BOX ── */
+    .center-box {
+      grid-column: 2;
+      grid-row: 2;
+      padding: 10px 16px 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .post-label {
+      font-size: 0.72rem;
+      color: #555;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
     }
 
     textarea {
       width: 100%;
-      height: 130px;
+      height: 110px;
       background: #1a1a1a;
       border: 1px solid #2a2a2a;
       border-radius: 12px;
-      padding: 16px;
+      padding: 14px;
       color: #e8e8e8;
       font-family: 'Inter', sans-serif;
-      font-size: 0.95rem;
+      font-size: 0.9rem;
       resize: none;
       outline: none;
       transition: border-color 0.2s;
     }
     textarea:focus { border-color: #7c3aed; }
-    textarea::placeholder { color: #404040; }
+    textarea::placeholder { color: #383838; }
 
     button.post {
       width: 100%;
-      margin-top: 10px;
-      padding: 12px;
+      margin-top: 8px;
+      padding: 11px;
       background: #7c3aed;
       color: #fff;
       border: none;
       border-radius: 10px;
-      font-size: 0.92rem;
+      font-size: 0.88rem;
       font-weight: 500;
       cursor: pointer;
       transition: background 0.18s;
@@ -66,58 +90,72 @@
     button.post:hover { background: #6d28d9; }
     button.post:disabled { background: #3b2070; cursor: not-allowed; }
 
-    .divider {
-      max-width: 560px;
-      margin: 0 auto 28px;
-      padding: 0 20px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      color: #333;
-      font-size: 0.78rem;
-    }
-    .divider::before, .divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: #1f1f1f;
-    }
-
-    .feed {
-      max-width: 560px;
-      margin: 0 auto;
-      padding: 0 20px 60px;
+    /* ── SIDE COLUMNS (left & right) ── */
+    .col-left {
+      grid-column: 1;
+      grid-row: 2 / 4;
+      padding: 10px 12px 40px 20px;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
+      border-right: 1px solid #1a1a1a;
+    }
+    .col-right {
+      grid-column: 3;
+      grid-row: 2 / 4;
+      padding: 10px 20px 40px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      border-left: 1px solid #1a1a1a;
     }
 
-    .card {
-      background: #161616;
-      border: 1px solid #222;
-      border-radius: 12px;
-      padding: 18px 20px;
+    /* ── BOTTOM CENTER (below post box) ── */
+    .col-bottom {
+      grid-column: 2;
+      grid-row: 3;
+      padding: 0 16px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
     }
+
+    /* ── CARD ── */
+    .card {
+      background: #141414;
+      border: 1px solid #1e1e1e;
+      border-radius: 11px;
+      padding: 14px 16px;
+      transition: border-color 0.2s;
+      position: relative;
+    }
+    .card:hover { border-color: #2a2a2a; }
     .card p {
-      font-size: 0.93rem;
-      line-height: 1.7;
-      color: #d4d4d4;
+      font-size: 0.85rem;
+      line-height: 1.65;
+      color: #ccc;
       white-space: pre-wrap;
       word-break: break-word;
     }
     .card .meta {
-      margin-top: 12px;
-      font-size: 0.73rem;
-      color: #3a3a3a;
+      margin-top: 10px;
+      font-size: 0.68rem;
+      color: #303030;
     }
 
-    .empty {
+    /* slightly bigger cards in center bottom */
+    .col-bottom .card p { font-size: 0.9rem; }
+
+    /* ── LOADING / EMPTY ── */
+    .loading-grid {
+      grid-column: 1 / 4;
       text-align: center;
+      padding: 60px 20px;
       color: #333;
-      font-size: 0.88rem;
-      padding: 40px 0;
+      font-size: 0.85rem;
     }
 
+    /* ── TOAST ── */
     .toast {
       position: fixed;
       bottom: 24px;
@@ -135,26 +173,46 @@
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
 
+    /* ── ADMIN DELETE ── */
     .del { display: none; }
     body.admin .del {
-      display: inline;
-      float: right;
+      display: block;
+      position: absolute;
+      top: 8px; right: 10px;
       background: none;
       border: none;
       color: #ef4444;
-      font-size: 0.75rem;
+      font-size: 0.7rem;
       cursor: pointer;
-      opacity: 0.6;
-      margin-left: 8px;
+      opacity: 0.5;
     }
     body.admin .del:hover { opacity: 1; }
 
+    /* ── FOOTER ── */
     footer {
+      grid-column: 1 / 4;
       text-align: center;
-      padding: 20px;
-      color: #222;
-      font-size: 0.75rem;
+      padding: 24px 20px;
+      color: #1e1e1e;
+      font-size: 0.72rem;
+      border-top: 1px solid #141414;
       user-select: none;
+      cursor: default;
+    }
+
+    /* ── MOBILE: stack everything ── */
+    @media (max-width: 860px) {
+      .page {
+        display: flex;
+        flex-direction: column;
+      }
+      .col-left, .col-right, .col-bottom {
+        border: none;
+        padding: 0 16px;
+      }
+      .center-box { padding: 10px 16px 20px; }
+      .header { padding: 36px 16px 16px; }
+      footer { grid-column: unset; }
     }
   </style>
 </head>
@@ -162,26 +220,37 @@
 
 <div class="toast" id="toast"></div>
 
-<header>
-  <h1>MMU <span>Secrets</span></h1>
-  <p>Anonymous. No login. No judgment.</p>
-</header>
+<div class="page" id="page">
 
-<div class="box">
-  <textarea id="txt" placeholder="Share your secret…"></textarea>
-  <button class="post" id="postBtn" onclick="postSecret()">Post Anonymously</button>
+  <!-- HEADER -->
+  <div class="header">
+    <h1>MMU <span>Secrets</span></h1>
+    <p>Anonymous. No login. No judgment.</p>
+  </div>
+
+  <!-- CENTER: post box -->
+  <div class="center-box">
+    <div class="post-label">post your confession here</div>
+    <textarea id="txt" placeholder="What's your secret…"></textarea>
+    <button class="post" id="postBtn" onclick="postSecret()">Post Anonymously</button>
+  </div>
+
+  <!-- LEFT column — filled by JS -->
+  <div class="col-left"  id="colLeft"></div>
+
+  <!-- RIGHT column — filled by JS -->
+  <div class="col-right" id="colRight"></div>
+
+  <!-- BOTTOM center — filled by JS -->
+  <div class="col-bottom" id="colBottom"></div>
+
+  <!-- FOOTER -->
+  <footer id="footer">MMU Secrets · anonymous forever</footer>
+
 </div>
-
-<div class="divider">confessions</div>
-
-<div class="feed" id="feed">
-  <div class="empty">Loading…</div>
-</div>
-
-<footer id="footer">MMU Secrets · anonymous forever</footer>
 
 <script type="module">
-  import { initializeApp }     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getFirestore, collection, addDoc,
            onSnapshot, query, orderBy,
            deleteDoc, doc, serverTimestamp }
@@ -196,7 +265,7 @@
     appId:             "1:719747850913:web:e8ed8f0ada88095b1786e0"
   };
 
-  const ADMIN_PASS = "mmusecrets2024"; // ← change this to your own password
+  const ADMIN_PASS = "mmusecrets2024";
 
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
@@ -205,24 +274,38 @@
   const q = query(collection(db, "secrets"), orderBy("ts", "desc"));
 
   onSnapshot(q, snap => {
-    const feed = document.getElementById("feed");
+    const left   = document.getElementById("colLeft");
+    const right  = document.getElementById("colRight");
+    const bottom = document.getElementById("colBottom");
+
+    left.innerHTML = right.innerHTML = bottom.innerHTML = "";
+
     if (snap.empty) {
-      feed.innerHTML = "<div class='empty'>No secrets yet. Be the first.</div>";
+      bottom.innerHTML = "<div style='text-align:center;color:#333;font-size:0.85rem;padding:40px 0'>No secrets yet. Be the first.</div>";
       return;
     }
-    feed.innerHTML = snap.docs.map(d => {
-      const p = d.data();
+
+    const docs = snap.docs;
+
+    docs.forEach((d, i) => {
+      const p  = d.data();
       const ms = p.ts?.toMillis?.() ?? Date.now();
-      return `<div class="card">
-        <button class="del" onclick="window._delete('${d.id}')">✕ delete</button>
+      const card = `<div class="card">
+        <button class="del" onclick="window._del('${d.id}')">✕</button>
         <p>${esc(p.text)}</p>
         <div class="meta">${timeAgo(ms)}</div>
       </div>`;
-    }).join("");
+
+      // Distribute: left, right, bottom cycling
+      const slot = i % 3;
+      if (slot === 0) left.innerHTML  += card;
+      if (slot === 1) right.innerHTML += card;
+      if (slot === 2) bottom.innerHTML += card;
+    });
   }, err => {
     console.error(err);
-    document.getElementById("feed").innerHTML =
-      "<div class='empty'>Could not load posts. Check Firestore rules.</div>";
+    document.getElementById("colBottom").innerHTML =
+      `<div style='color:#ef4444;text-align:center;padding:20px;font-size:0.85rem'>Error: ${err.code}<br><small>${err.message}</small></div>`;
   });
 
   // ── Post ──────────────────────────────────────────────────────
@@ -230,49 +313,38 @@
     const txt = document.getElementById("txt").value.trim();
     if (!txt) return;
     const btn = document.getElementById("postBtn");
-    btn.disabled = true;
-    btn.textContent = "Posting…";
+    btn.disabled = true; btn.textContent = "Posting…";
     try {
-      await addDoc(collection(db, "secrets"), {
-        text: txt,
-        ts:   serverTimestamp()
-      });
+      await addDoc(collection(db, "secrets"), { text: txt, ts: serverTimestamp() });
       document.getElementById("txt").value = "";
       showToast("Posted ✓");
     } catch (e) {
       console.error(e);
       showToast("Error: " + e.code);
-      document.getElementById("feed").innerHTML =
-        `<div class='empty' style='color:#ef4444'>Error: ${e.code}<br><small>${e.message}</small></div>`;
     }
-    btn.disabled = false;
-    btn.textContent = "Post Anonymously";
+    btn.disabled = false; btn.textContent = "Post Anonymously";
   };
 
-  // ── Delete (admin only) ───────────────────────────────────────
-  window._delete = async function (id) {
+  // ── Delete ────────────────────────────────────────────────────
+  window._del = async function (id) {
     if (!document.body.classList.contains("admin")) return;
     try { await deleteDoc(doc(db, "secrets", id)); }
-    catch (e) { showToast("Delete failed"); console.error(e); }
+    catch (e) { showToast("Delete failed: " + e.code); }
   };
 
   // ── Admin: tap footer 5× quickly ─────────────────────────────
   let taps = 0, tapTimer;
   document.getElementById("footer").addEventListener("click", () => {
-    taps++;
-    clearTimeout(tapTimer);
+    taps++; clearTimeout(tapTimer);
     tapTimer = setTimeout(() => taps = 0, 800);
     if (taps >= 5) {
       taps = 0;
       const p = prompt("Admin password:");
-      if (p === ADMIN_PASS) {
-        document.body.classList.add("admin");
-        showToast("Admin mode on 🔐");
-      }
+      if (p === ADMIN_PASS) { document.body.classList.add("admin"); showToast("Admin mode on 🔐"); }
     }
   });
 
-  // ── Ctrl/Cmd+Enter to post ────────────────────────────────────
+  // ── Ctrl/Cmd+Enter ────────────────────────────────────────────
   document.getElementById("txt").addEventListener("keydown", e => {
     if ((e.ctrlKey || e.metaKey) && e.key === "Enter") window.postSecret();
   });
@@ -284,21 +356,17 @@
   function timeAgo(ts) {
     const d = Date.now() - ts;
     if (d < 60000)    return "just now";
-    if (d < 3600000)  return Math.floor(d / 60000) + "m ago";
-    if (d < 86400000) return Math.floor(d / 3600000) + "h ago";
-    return new Date(ts).toLocaleDateString("en-MY", {
-      day: "numeric", month: "short", year: "numeric"
-    });
+    if (d < 3600000)  return Math.floor(d/60000) + "m ago";
+    if (d < 86400000) return Math.floor(d/3600000) + "h ago";
+    return new Date(ts).toLocaleDateString("en-MY",{day:"numeric",month:"short",year:"numeric"});
   }
   let toastT;
   function showToast(msg) {
     const t = document.getElementById("toast");
-    t.textContent = msg;
-    t.classList.add("show");
+    t.textContent = msg; t.classList.add("show");
     clearTimeout(toastT);
     toastT = setTimeout(() => t.classList.remove("show"), 2500);
   }
-  window.showToast = showToast;
 </script>
 </body>
 </html>
