@@ -105,7 +105,7 @@
   <footer id="footer">MMU Secrets · anonymous forever</footer>
 </div>
 
-<!-- Runtime config: all values Base64-encoded — no project name, email, or key visible in source -->
+
 <script>
 (function(){
   var _x = atob;
@@ -288,8 +288,7 @@
     catch (e) { showToast("Delete failed: " + e.code); }
   }
 
-  // Admin unlock: tap footer 5× rapidly, then enter password
-  // Password is never stored in source — only its SHA-256 hash is
+  
   let taps = 0, tapTimer;
   document.getElementById("footer").addEventListener("click", () => {
     taps++; clearTimeout(tapTimer);
