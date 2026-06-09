@@ -15,7 +15,6 @@
       min-height: 100vh;
     }
 
-    /* Header */
     header {
       text-align: center;
       padding: 60px 20px 40px;
@@ -24,16 +23,10 @@
       font-family: 'Playfair Display', serif;
       font-size: 2.2rem;
       color: #fff;
-      letter-spacing: -0.5px;
     }
     header h1 span { color: #a78bfa; }
-    header p {
-      margin-top: 8px;
-      color: #555;
-      font-size: 0.88rem;
-    }
+    header p { margin-top: 8px; color: #555; font-size: 0.88rem; }
 
-    /* Post box */
     .box {
       max-width: 560px;
       margin: 0 auto;
@@ -73,7 +66,6 @@
     button.post:hover { background: #6d28d9; }
     button.post:disabled { background: #3b2070; cursor: not-allowed; }
 
-    /* Divider */
     .divider {
       max-width: 560px;
       margin: 0 auto 28px;
@@ -91,7 +83,6 @@
       background: #1f1f1f;
     }
 
-    /* Feed */
     .feed {
       max-width: 560px;
       margin: 0 auto;
@@ -127,7 +118,6 @@
       padding: 40px 0;
     }
 
-    /* Toast */
     .toast {
       position: fixed;
       bottom: 24px;
@@ -141,10 +131,10 @@
       font-size: 0.85rem;
       transition: transform 0.3s;
       white-space: nowrap;
+      z-index: 99;
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
 
-    /* Admin delete (hidden until admin mode) */
     .del { display: none; }
     body.admin .del {
       display: inline;
@@ -155,16 +145,15 @@
       font-size: 0.75rem;
       cursor: pointer;
       opacity: 0.6;
+      margin-left: 8px;
     }
     body.admin .del:hover { opacity: 1; }
 
-    /* Secret admin trigger */
     footer {
       text-align: center;
       padding: 20px;
       color: #222;
       font-size: 0.75rem;
-      cursor: default;
       user-select: none;
     }
   </style>
@@ -180,119 +169,136 @@
 
 <div class="box">
   <textarea id="txt" placeholder="Share your secret…"></textarea>
-  <button class="post" id="postBtn" onclick="post()">Post Anonymously</button>
+  <button class="post" id="postBtn" onclick="postSecret()">Post Anonymously</button>
 </div>
 
 <div class="divider">confessions</div>
 
 <div class="feed" id="feed">
-  <div class="empty" id="emptyMsg">No secrets yet. Be the first.</div>
+  <div class="empty">Loading…</div>
 </div>
 
 <footer id="footer">MMU Secrets · anonymous forever</footer>
 
-<script>
-const ADMIN_PASS = "mmusecrets2024"; // ← change this
-let data = [];
-let adminMode = false;
-let footerTaps = 0, footerTimer;
+<script type="module">
+  import { initializeApp }     from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getFirestore, collection, addDoc,
+           onSnapshot, query, orderBy,
+           deleteDoc, doc, serverTimestamp }
+    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-// ── Load ──────────────────────────────────────
-async function load() {
-  try {
-    const r = await window.storage.get("posts");
-    data = r ? JSON.parse(r.value) : [];
-  } catch { data = []; }
-  render();
-}
+  const firebaseConfig = {
+    apiKey:            "AIzaSyDlegLoSoqjwxm7UBg9u2LG93NYW1GqEog",
+    authDomain:        "haswinmmuhenry.firebaseapp.com",
+    projectId:         "haswinmmuhenry",
+    storageBucket:     "haswinmmuhenry.firebasestorage.app",
+    messagingSenderId: "719747850913",
+    appId:             "1:719747850913:web:e8ed8f0ada88095b1786e0"
+  };
 
-// ── Save ──────────────────────────────────────
-async function save() {
-  await window.storage.set("posts", JSON.stringify(data));
-}
+  const ADMIN_PASS = "mmusecrets2024"; // ← change this to your own password
 
-// ── Post ──────────────────────────────────────
-async function post() {
-  const txt = document.getElementById("txt").value.trim();
-  if (!txt) return;
-  const btn = document.getElementById("postBtn");
-  btn.disabled = true;
-  btn.textContent = "Posting…";
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
 
-  data.unshift({ id: Date.now().toString(36), text: txt, ts: Date.now() });
-  await save();
+  // ── Live feed ─────────────────────────────────────────────────
+  const q = query(collection(db, "secrets"), orderBy("ts", "desc"));
 
-  document.getElementById("txt").value = "";
-  btn.disabled = false;
-  btn.textContent = "Post Anonymously";
-  toast("Posted ✓");
-  render();
-}
-
-// ── Render ────────────────────────────────────
-function render() {
-  const feed = document.getElementById("feed");
-  document.getElementById("emptyMsg").style.display = data.length ? "none" : "block";
-  const cards = data.map(p => `
-    <div class="card" id="c-${p.id}">
-      <button class="del" onclick="del('${p.id}')">✕ delete</button>
-      <p>${esc(p.text)}</p>
-      <div class="meta">${timeAgo(p.ts)}</div>
-    </div>`).join("");
-  feed.innerHTML = (data.length ? "" : "<div class='empty' id='emptyMsg'>No secrets yet. Be the first.</div>") + cards;
-}
-
-// ── Delete (admin only) ───────────────────────
-async function del(id) {
-  if (!adminMode) return;
-  data = data.filter(p => p.id !== id);
-  await save();
-  render();
-}
-
-// ── Admin: click footer 5× quickly ───────────
-document.getElementById("footer").addEventListener("click", () => {
-  footerTaps++;
-  clearTimeout(footerTimer);
-  footerTimer = setTimeout(() => footerTaps = 0, 800);
-  if (footerTaps >= 5) {
-    footerTaps = 0;
-    const pass = prompt("Admin password:");
-    if (pass === ADMIN_PASS) {
-      adminMode = true;
-      document.body.classList.add("admin");
-      toast("Admin mode on");
-      render();
+  onSnapshot(q, snap => {
+    const feed = document.getElementById("feed");
+    if (snap.empty) {
+      feed.innerHTML = "<div class='empty'>No secrets yet. Be the first.</div>";
+      return;
     }
+    feed.innerHTML = snap.docs.map(d => {
+      const p = d.data();
+      const ms = p.ts?.toMillis?.() ?? Date.now();
+      return `<div class="card">
+        <button class="del" onclick="window._delete('${d.id}')">✕ delete</button>
+        <p>${esc(p.text)}</p>
+        <div class="meta">${timeAgo(ms)}</div>
+      </div>`;
+    }).join("");
+  }, err => {
+    console.error(err);
+    document.getElementById("feed").innerHTML =
+      "<div class='empty'>Could not load posts. Check Firestore rules.</div>";
+  });
+
+  // ── Post ──────────────────────────────────────────────────────
+  window.postSecret = async function () {
+    const txt = document.getElementById("txt").value.trim();
+    if (!txt) return;
+    const btn = document.getElementById("postBtn");
+    btn.disabled = true;
+    btn.textContent = "Posting…";
+    try {
+      await addDoc(collection(db, "secrets"), {
+        text: txt,
+        ts:   serverTimestamp()
+      });
+      document.getElementById("txt").value = "";
+      showToast("Posted ✓");
+    } catch (e) {
+      console.error(e);
+      showToast("Error: " + e.code);
+      document.getElementById("feed").innerHTML =
+        `<div class='empty' style='color:#ef4444'>Error: ${e.code}<br><small>${e.message}</small></div>`;
+    }
+    btn.disabled = false;
+    btn.textContent = "Post Anonymously";
+  };
+
+  // ── Delete (admin only) ───────────────────────────────────────
+  window._delete = async function (id) {
+    if (!document.body.classList.contains("admin")) return;
+    try { await deleteDoc(doc(db, "secrets", id)); }
+    catch (e) { showToast("Delete failed"); console.error(e); }
+  };
+
+  // ── Admin: tap footer 5× quickly ─────────────────────────────
+  let taps = 0, tapTimer;
+  document.getElementById("footer").addEventListener("click", () => {
+    taps++;
+    clearTimeout(tapTimer);
+    tapTimer = setTimeout(() => taps = 0, 800);
+    if (taps >= 5) {
+      taps = 0;
+      const p = prompt("Admin password:");
+      if (p === ADMIN_PASS) {
+        document.body.classList.add("admin");
+        showToast("Admin mode on 🔐");
+      }
+    }
+  });
+
+  // ── Ctrl/Cmd+Enter to post ────────────────────────────────────
+  document.getElementById("txt").addEventListener("keydown", e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") window.postSecret();
+  });
+
+  // ── Helpers ───────────────────────────────────────────────────
+  function esc(s) {
+    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   }
-});
-
-// ── Helpers ───────────────────────────────────
-function esc(s) {
-  return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-}
-function timeAgo(ts) {
-  const d = Date.now() - ts;
-  if (d < 60000)    return "just now";
-  if (d < 3600000)  return Math.floor(d/60000) + "m ago";
-  if (d < 86400000) return Math.floor(d/3600000) + "h ago";
-  return new Date(ts).toLocaleDateString("en-MY",{day:"numeric",month:"short",year:"numeric"});
-}
-let toastT;
-function toast(msg) {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.classList.add("show");
-  clearTimeout(toastT);
-  toastT = setTimeout(() => t.classList.remove("show"), 2500);
-}
-
-// ── Submit on Ctrl/Cmd+Enter ──────────────────
-document.getElementById("txt").addEventListener("keydown", e => {
-  if ((e.ctrlKey || e.metaKey) && e.key === "Enter") post();
-});
-
-load();
+  function timeAgo(ts) {
+    const d = Date.now() - ts;
+    if (d < 60000)    return "just now";
+    if (d < 3600000)  return Math.floor(d / 60000) + "m ago";
+    if (d < 86400000) return Math.floor(d / 3600000) + "h ago";
+    return new Date(ts).toLocaleDateString("en-MY", {
+      day: "numeric", month: "short", year: "numeric"
+    });
+  }
+  let toastT;
+  function showToast(msg) {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toastT);
+    toastT = setTimeout(() => t.classList.remove("show"), 2500);
+  }
+  window.showToast = showToast;
 </script>
 </body>
 </html>
