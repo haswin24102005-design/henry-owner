@@ -16,16 +16,14 @@
       overflow-x: hidden;
     }
 
-    /* ── PAGE GRID ── */
     .page {
       display: grid;
-      grid-template-columns: 1fr 400px 1fr;
+      grid-template-columns: 1fr 420px 1fr;
       grid-template-rows: auto auto auto;
       min-height: 100vh;
       gap: 0;
     }
 
-    /* ── HEADER spans full width ── */
     .header {
       grid-column: 1 / 4;
       text-align: center;
@@ -39,7 +37,6 @@
     .header h1 span { color: #a78bfa; }
     .header p { margin-top: 6px; color: #444; font-size: 0.82rem; }
 
-    /* ── CENTER POST BOX ── */
     .center-box {
       grid-column: 2;
       grid-row: 2;
@@ -90,7 +87,6 @@
     button.post:hover { background: #6d28d9; }
     button.post:disabled { background: #3b2070; cursor: not-allowed; }
 
-    /* ── SIDE COLUMNS (left & right) ── */
     .col-left {
       grid-column: 1;
       grid-row: 2 / 4;
@@ -110,7 +106,6 @@
       border-left: 1px solid #1a1a1a;
     }
 
-    /* ── BOTTOM CENTER (below post box) ── */
     .col-bottom {
       grid-column: 2;
       grid-row: 3;
@@ -125,35 +120,133 @@
       background: #141414;
       border: 1px solid #1e1e1e;
       border-radius: 11px;
-      padding: 14px 16px;
+      padding: 14px 16px 10px;
       transition: border-color 0.2s;
       position: relative;
     }
     .card:hover { border-color: #2a2a2a; }
-    .card p {
+    .card > p.secret-text {
       font-size: 0.85rem;
       line-height: 1.65;
       color: #ccc;
       white-space: pre-wrap;
       word-break: break-word;
     }
+    .col-bottom .card > p.secret-text { font-size: 0.9rem; }
+
     .card .meta {
-      margin-top: 10px;
+      margin-top: 8px;
       font-size: 0.68rem;
       color: #303030;
     }
 
-    /* slightly bigger cards in center bottom */
-    .col-bottom .card p { font-size: 0.9rem; }
-
-    /* ── LOADING / EMPTY ── */
-    .loading-grid {
-      grid-column: 1 / 4;
-      text-align: center;
-      padding: 60px 20px;
-      color: #333;
-      font-size: 0.85rem;
+    /* ── CARD ACTIONS ── */
+    .card-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 10px;
+      border-top: 1px solid #1e1e1e;
+      padding-top: 8px;
     }
+
+    .btn-like {
+      background: none;
+      border: 1px solid #252525;
+      border-radius: 8px;
+      color: #555;
+      font-size: 0.75rem;
+      padding: 4px 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all 0.18s;
+    }
+    .btn-like:hover { border-color: #a78bfa; color: #a78bfa; }
+    .btn-like.liked { border-color: #7c3aed; color: #a78bfa; background: #1e1530; }
+    .btn-like .thumb { font-size: 0.85rem; }
+
+    .btn-reply {
+      background: none;
+      border: none;
+      color: #383838;
+      font-size: 0.72rem;
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 6px;
+      transition: color 0.15s;
+    }
+    .btn-reply:hover { color: #7c3aed; }
+
+    /* ── REPLIES ── */
+    .replies-section { margin-top: 8px; }
+
+    .reply-input-wrap {
+      display: none;
+      gap: 6px;
+      margin-top: 8px;
+      margin-bottom: 6px;
+    }
+    .reply-input-wrap.open { display: flex; }
+
+    .reply-input-wrap textarea {
+      height: 52px;
+      font-size: 0.78rem;
+      padding: 8px 10px;
+      border-radius: 8px;
+      flex: 1;
+    }
+
+    .btn-send-reply {
+      background: #7c3aed;
+      border: none;
+      color: #fff;
+      border-radius: 8px;
+      padding: 0 12px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      white-space: nowrap;
+      align-self: flex-end;
+      height: 36px;
+      transition: background 0.15s;
+    }
+    .btn-send-reply:hover { background: #6d28d9; }
+    .btn-send-reply:disabled { background: #3b2070; cursor: not-allowed; }
+
+    .replies-list { display: flex; flex-direction: column; gap: 6px; }
+
+    .reply-item {
+      background: #0f0f0f;
+      border-left: 2px solid #2a2a2a;
+      border-radius: 0 7px 7px 0;
+      padding: 8px 10px;
+      font-size: 0.78rem;
+      color: #999;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .reply-item .reply-meta {
+      font-size: 0.65rem;
+      color: #2a2a2a;
+      margin-top: 4px;
+    }
+
+    /* ── ADMIN ── */
+    .del { display: none; }
+    body.admin .del {
+      display: block;
+      position: absolute;
+      top: 8px; right: 10px;
+      background: none;
+      border: none;
+      color: #ef4444;
+      font-size: 0.7rem;
+      cursor: pointer;
+      opacity: 0.5;
+    }
+    body.admin .del:hover { opacity: 1; }
 
     /* ── TOAST ── */
     .toast {
@@ -173,26 +266,24 @@
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
 
-    /* ── ADMIN DELETE ── */
-    .del { display: none; }
-    body.admin .del {
-      display: block;
-      position: absolute;
-      top: 8px; right: 10px;
-      background: none;
-      border: none;
-      color: #ef4444;
-      font-size: 0.7rem;
-      cursor: pointer;
-      opacity: 0.5;
+    /* ── NOTICE BAR ── */
+    .notice-bar {
+      grid-column: 1 / 4;
+      text-align: center;
+      padding: 14px 20px;
+      background: #100e1a;
+      border-top: 1px solid #1e1e1e;
+      font-size: 0.76rem;
+      color: #444;
+      line-height: 1.7;
     }
-    body.admin .del:hover { opacity: 1; }
+    .notice-bar strong { color: #7c3aed; }
 
     /* ── FOOTER ── */
     footer {
       grid-column: 1 / 4;
       text-align: center;
-      padding: 24px 20px;
+      padding: 16px 20px;
       color: #1e1e1e;
       font-size: 0.72rem;
       border-top: 1px solid #141414;
@@ -200,19 +291,13 @@
       cursor: default;
     }
 
-    /* ── MOBILE: stack everything ── */
+    /* ── MOBILE ── */
     @media (max-width: 860px) {
-      .page {
-        display: flex;
-        flex-direction: column;
-      }
-      .col-left, .col-right, .col-bottom {
-        border: none;
-        padding: 0 16px;
-      }
+      .page { display: flex; flex-direction: column; }
+      .col-left, .col-right, .col-bottom { border: none; padding: 0 16px; }
       .center-box { padding: 10px 16px 20px; }
       .header { padding: 36px 16px 16px; }
-      footer { grid-column: unset; }
+      footer, .notice-bar { grid-column: unset; }
     }
   </style>
 </head>
@@ -222,39 +307,36 @@
 
 <div class="page" id="page">
 
-  <!-- HEADER -->
   <div class="header">
     <h1>MMU <span>Secrets</span></h1>
     <p>Anonymous. No login. No judgment.</p>
   </div>
 
-  <!-- CENTER: post box -->
   <div class="center-box">
     <div class="post-label">post your confession here</div>
     <textarea id="txt" placeholder="What's your secret…"></textarea>
     <button class="post" id="postBtn" onclick="postSecret()">Post Anonymously</button>
   </div>
 
-  <!-- LEFT column — filled by JS -->
   <div class="col-left"  id="colLeft"></div>
-
-  <!-- RIGHT column — filled by JS -->
   <div class="col-right" id="colRight"></div>
-
-  <!-- BOTTOM center — filled by JS -->
   <div class="col-bottom" id="colBottom"></div>
 
-  <!-- FOOTER -->
+  <div class="notice-bar">
+    😔 Feel offended by any post? Reply to it and include <strong>#takedown</strong> — the admin will review and delete it manually.
+  </div>
+
   <footer id="footer">MMU Secrets · anonymous forever</footer>
 
 </div>
 
 <script type="module">
   import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, addDoc,
-           onSnapshot, query, orderBy,
-           deleteDoc, doc, serverTimestamp }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import {
+    getFirestore, collection, addDoc, onSnapshot,
+    query, orderBy, deleteDoc, doc, serverTimestamp,
+    updateDoc, increment
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey:            "AIzaSyDlegLoSoqjwxm7UBg9u2LG93NYW1GqEog",
@@ -270,14 +352,17 @@
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
 
-  // ── Live feed ─────────────────────────────────────────────────
+  // Track liked posts per browser
+  const getLiked = () => JSON.parse(localStorage.getItem("mmu_liked") || "[]");
+  const setLiked = arr => localStorage.setItem("mmu_liked", JSON.stringify(arr));
+
+  // ── Live feed — ordered by time desc (latest first) ───────────
   const q = query(collection(db, "secrets"), orderBy("ts", "desc"));
 
   onSnapshot(q, snap => {
     const left   = document.getElementById("colLeft");
     const right  = document.getElementById("colRight");
     const bottom = document.getElementById("colBottom");
-
     left.innerHTML = right.innerHTML = bottom.innerHTML = "";
 
     if (snap.empty) {
@@ -285,28 +370,63 @@
       return;
     }
 
-    const docs = snap.docs;
+    snap.docs.forEach((d, i) => {
+      const p    = d.data();
+      const ms   = p.ts?.toMillis?.() ?? Date.now();
+      const liked = getLiked().includes(d.id);
+      const likes = p.likes || 0;
 
-    docs.forEach((d, i) => {
-      const p  = d.data();
-      const ms = p.ts?.toMillis?.() ?? Date.now();
-      const card = `<div class="card">
+      const card = document.createElement("div");
+      card.className = "card";
+      card.id = "card-" + d.id;
+      card.innerHTML = `
         <button class="del" onclick="window._del('${d.id}')">✕</button>
-        <p>${esc(p.text)}</p>
+        <p class="secret-text">${esc(p.text)}</p>
         <div class="meta">${timeAgo(ms)}</div>
-      </div>`;
+        <div class="card-actions">
+          <button class="btn-like${liked ? ' liked' : ''}" id="like-${d.id}" onclick="window._like('${d.id}')">
+            <span class="thumb">👍</span><span class="like-count">${likes}</span>
+          </button>
+          <button class="btn-reply" onclick="window._toggleReply('${d.id}')">💬 Reply</button>
+        </div>
+        <div class="replies-section" id="replies-${d.id}">
+          <div class="reply-input-wrap" id="reply-input-${d.id}">
+            <textarea placeholder="Reply anonymously… (write #takedown to report this post)" id="reply-txt-${d.id}"></textarea>
+            <button class="btn-send-reply" id="reply-btn-${d.id}" onclick="window._sendReply('${d.id}')">Send</button>
+          </div>
+          <div class="replies-list" id="replies-list-${d.id}"></div>
+        </div>
+      `;
 
-      // Distribute: left, right, bottom cycling
       const slot = i % 3;
-      if (slot === 0) left.innerHTML  += card;
-      if (slot === 1) right.innerHTML += card;
-      if (slot === 2) bottom.innerHTML += card;
+      if (slot === 0) left.appendChild(card);
+      if (slot === 1) right.appendChild(card);
+      if (slot === 2) bottom.appendChild(card);
+
+      loadReplies(d.id);
     });
   }, err => {
-    console.error(err);
     document.getElementById("colBottom").innerHTML =
       `<div style='color:#ef4444;text-align:center;padding:20px;font-size:0.85rem'>Error: ${err.code}<br><small>${err.message}</small></div>`;
   });
+
+  // ── Load replies live ─────────────────────────────────────────
+  function loadReplies(postId) {
+    const rq = query(collection(db, "secrets", postId, "replies"), orderBy("ts", "asc"));
+    onSnapshot(rq, snap => {
+      const list = document.getElementById("replies-list-" + postId);
+      if (!list) return;
+      list.innerHTML = "";
+      snap.docs.forEach(rd => {
+        const r  = rd.data();
+        const ms = r.ts?.toMillis?.() ?? Date.now();
+        const item = document.createElement("div");
+        item.className = "reply-item";
+        item.innerHTML = `${esc(r.text)}<div class="reply-meta">${timeAgo(ms)}</div>`;
+        list.appendChild(item);
+      });
+    });
+  }
 
   // ── Post ──────────────────────────────────────────────────────
   window.postSecret = async function () {
@@ -315,14 +435,64 @@
     const btn = document.getElementById("postBtn");
     btn.disabled = true; btn.textContent = "Posting…";
     try {
-      await addDoc(collection(db, "secrets"), { text: txt, ts: serverTimestamp() });
+      await addDoc(collection(db, "secrets"), { text: txt, ts: serverTimestamp(), likes: 0 });
       document.getElementById("txt").value = "";
       showToast("Posted ✓");
     } catch (e) {
-      console.error(e);
       showToast("Error: " + e.code);
     }
     btn.disabled = false; btn.textContent = "Post Anonymously";
+  };
+
+  // ── Toggle reply input ────────────────────────────────────────
+  window._toggleReply = function (postId) {
+    const wrap = document.getElementById("reply-input-" + postId);
+    if (!wrap) return;
+    wrap.classList.toggle("open");
+    if (wrap.classList.contains("open")) {
+      document.getElementById("reply-txt-" + postId)?.focus();
+    }
+  };
+
+  // ── Send reply ────────────────────────────────────────────────
+  window._sendReply = async function (postId) {
+    const txtEl = document.getElementById("reply-txt-" + postId);
+    const btn   = document.getElementById("reply-btn-" + postId);
+    if (!txtEl) return;
+    const txt = txtEl.value.trim();
+    if (!txt) return;
+    btn.disabled = true; btn.textContent = "Sending…";
+    try {
+      await addDoc(collection(db, "secrets", postId, "replies"), {
+        text: txt,
+        ts: serverTimestamp()
+      });
+      txtEl.value = "";
+      document.getElementById("reply-input-" + postId)?.classList.remove("open");
+      const isTakedown = txt.toLowerCase().includes("#takedown");
+      showToast(isTakedown ? "Report submitted. Admin will review 🔍" : "Reply posted ✓");
+    } catch (e) {
+      showToast("Error: " + e.code);
+    }
+    btn.disabled = false; btn.textContent = "Send";
+  };
+
+  // ── Like (thumbs up) ─────────────────────────────────────────
+  window._like = async function (postId) {
+    const liked = getLiked();
+    if (liked.includes(postId)) return;
+    try {
+      await updateDoc(doc(db, "secrets", postId), { likes: increment(1) });
+      setLiked([...liked, postId]);
+      const btn = document.getElementById("like-" + postId);
+      if (btn) {
+        btn.classList.add("liked");
+        const count = btn.querySelector(".like-count");
+        if (count) count.textContent = parseInt(count.textContent || "0") + 1;
+      }
+    } catch (e) {
+      showToast("Error: " + e.code);
+    }
   };
 
   // ── Delete ────────────────────────────────────────────────────
@@ -332,7 +502,7 @@
     catch (e) { showToast("Delete failed: " + e.code); }
   };
 
-  // ── Admin: tap footer 5× quickly ─────────────────────────────
+  // ── Admin: tap footer 5x quickly ─────────────────────────────
   let taps = 0, tapTimer;
   document.getElementById("footer").addEventListener("click", () => {
     taps++; clearTimeout(tapTimer);
@@ -344,14 +514,15 @@
     }
   });
 
-  // ── Ctrl/Cmd+Enter ────────────────────────────────────────────
+  // ── Ctrl/Cmd+Enter to post ────────────────────────────────────
   document.getElementById("txt").addEventListener("keydown", e => {
     if ((e.ctrlKey || e.metaKey) && e.key === "Enter") window.postSecret();
   });
 
   // ── Helpers ───────────────────────────────────────────────────
   function esc(s) {
-    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    return String(s || "")
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   }
   function timeAgo(ts) {
     const d = Date.now() - ts;
@@ -365,7 +536,7 @@
     const t = document.getElementById("toast");
     t.textContent = msg; t.classList.add("show");
     clearTimeout(toastT);
-    toastT = setTimeout(() => t.classList.remove("show"), 2500);
+    toastT = setTimeout(() => t.classList.remove("show"), 2800);
   }
 </script>
 </body>
