@@ -344,17 +344,14 @@
   import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, doc, serverTimestamp, updateDoc, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
   import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js";
 
-  // Obscured project mappings 
-  const _m1 = "haswin";
-  const _m2 = "mmu";
-  const _m3 = "henry";
-  const targetId = `${_m1}${_m2}${_m3}`;
+  // Dynamically figures out the workspace environment directly from the active window URL
+  const tkn = window.location.hostname.split('.')[0] || "project-endpoint";
 
   const firebaseConfig = {
     apiKey:            "AIzaSyDlegLoSoqjwxm7UBg9u2LG93NYW1GqEog",
-    authDomain:        `${targetId}.firebaseapp.com`,
-    projectId:         targetId,
-    storageBucket:     `${targetId}.firebasestorage.app`,
+    authDomain:        `${tkn}.firebaseapp.com`,
+    projectId:         tkn,
+    storageBucket:     `${tkn}.firebasestorage.app`,
     messagingSenderId: "719747850913",
     appId:             "1:719747850913:web:e8ed8f0ada88095b1786e0"
   };
@@ -383,7 +380,6 @@
   }
   showSkeletons();
 
-  // Live snapshot context
   const q = query(collection(db, "secrets"), orderBy("ts", "desc"));
 
   onSnapshot(q, snap => {
@@ -525,7 +521,6 @@
     }
   }
 
-  // ── SECURE BOUNDARY: DELETION VIA CLOUD FUNCTION ──
   async function delSecret(id) {
     if (!document.body.classList.contains("admin")) return;
     
@@ -534,7 +529,6 @@
 
     try {
       showToast("Requesting deletion...");
-      // Calls back-end verification. Key and execution are hidden entirely from client inspection.
       const secureDeleteCall = httpsCallable(functions, 'verifyAndExecuteDelete');
       const payload = await secureDeleteCall({ postId: id, accessKey: pInput });
       
@@ -548,7 +542,6 @@
     }
   }
 
-  // Admin access node tracking
   let taps = 0, tapTimer;
   document.getElementById("footer").addEventListener("click", () => {
     taps++; clearTimeout(tapTimer);
