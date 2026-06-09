@@ -16,34 +16,98 @@
       overflow-x: hidden;
     }
 
-    /* ── PAGE GRID ── */
-    .page {
-      display: grid;
-      grid-template-columns: 1fr 400px 1fr;
-      grid-template-rows: auto auto auto;
-      min-height: 100vh;
-      gap: 0;
+    /* ── RUNNING TICKER BANNER ── */
+    .top-ticker-banner {
+      width: 100%;
+      background: #120e21;
+      border-bottom: 1px solid #1e1a3a;
+      overflow: hidden;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 100;
+      white-space: nowrap;
+      padding: 8px 0;
+    }
+    .ticker-wrapper {
+      display: inline-block;
+      padding-left: 100%;
+      animation: ticker-move 30s linear infinite;
+    }
+    .ticker-item {
+      display: inline-block;
+      font-size: 0.75rem;
+      color: #a78bfa;
+      letter-spacing: 0.03em;
+    }
+    .ticker-item strong {
+      color: #ff4444;
+      background: rgba(255, 68, 68, 0.1);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    @keyframes ticker-move {
+      0% { transform: translate3d(0, 0, 0); }
+      100% { transform: translate3d(-100%, 0, 0); }
     }
 
-    /* ── HEADER spans full width ── */
+    /* ── LIVE COUNTER ── */
+    .live-counter {
+      position: fixed;
+      top: 52px;
+      right: 20px;
+      z-index: 90;
+      font-size: 0.72rem;
+      font-weight: 500;
+      color: #666;
+      background: rgba(20, 20, 20, 0.6);
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1px solid #1a1a1a;
+      backdrop-filter: blur(4px);
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .live-counter-dot {
+      width: 6px;
+      height: 6px;
+      background: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2s infinite;
+    }
+    .live-counter span { color: #fff; }
+    @keyframes pulse {
+      0% { opacity: 0.4; }
+      50% { opacity: 1; }
+      100% { opacity: 0.4; }
+    }
+
+    /* ── PAGE LAYOUT ── */
+    .page {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+      padding-top: 40px;
+    }
+
     .header {
-      grid-column: 1 / 4;
       text-align: center;
       padding: 44px 20px 20px;
+      width: 100%;
     }
-    .header h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 2rem;
-      color: #fff;
-    }
+    .header h1 { font-family: 'Playfair Display', serif; font-size: 2rem; color: #fff; }
     .header h1 span { color: #a78bfa; }
     .header p { margin-top: 6px; color: #444; font-size: 0.82rem; }
 
-    /* ── CENTER POST BOX ── */
     .center-box {
-      grid-column: 2;
-      grid-row: 2;
-      padding: 10px 16px 20px;
+      width: 100%;
+      max-width: 420px;
+      padding: 10px 16px 30px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -90,34 +154,60 @@
     button.post:hover { background: #6d28d9; }
     button.post:disabled { background: #3b2070; cursor: not-allowed; }
 
-    /* ── SIDE COLUMNS (left & right) ── */
+    /* ── ISOLATED STREAM CONTENT GRID ── */
+    .content-grid {
+      display: grid;
+      grid-template-columns: 1fr 420px 1fr;
+      width: 100%;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
     .col-left {
-      grid-column: 1;
-      grid-row: 2 / 4;
       padding: 10px 12px 40px 20px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       border-right: 1px solid #1a1a1a;
     }
+    .col-bottom {
+      padding: 10px 16px 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
     .col-right {
-      grid-column: 3;
-      grid-row: 2 / 4;
       padding: 10px 20px 40px 12px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       border-left: 1px solid #1a1a1a;
     }
 
-    /* ── BOTTOM CENTER (below post box) ── */
-    .col-bottom {
-      grid-column: 2;
-      grid-row: 3;
-      padding: 0 16px 40px;
+    /* ── SKELETON LOADER ── */
+    .skeleton {
+      background: #141414;
+      border: 1px solid #1e1e1e;
+      border-radius: 11px;
+      padding: 14px 16px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 8px;
+    }
+    .skel-line {
+      height: 10px;
+      border-radius: 5px;
+      background: linear-gradient(90deg, #1e1e1e 25%, #252525 50%, #1e1e1e 75%);
+      background-size: 200% 100%;
+      animation: shimmer 1.4s infinite;
+    }
+    .skel-line.short { width: 40%; }
+    .skel-line.med   { width: 70%; }
+    .skel-line.long  { width: 90%; }
+    .skel-line.xshort{ width: 25%; height: 8px; margin-top: 4px; }
+    @keyframes shimmer {
+      0%   { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
 
     /* ── CARD ── */
@@ -125,35 +215,114 @@
       background: #141414;
       border: 1px solid #1e1e1e;
       border-radius: 11px;
-      padding: 14px 16px;
+      padding: 14px 16px 10px;
       transition: border-color 0.2s;
       position: relative;
     }
     .card:hover { border-color: #2a2a2a; }
-    .card p {
+    .card > p.secret-text {
       font-size: 0.85rem;
       line-height: 1.65;
       color: #ccc;
       white-space: pre-wrap;
       word-break: break-word;
     }
-    .card .meta {
+    .col-bottom .card > p.secret-text { font-size: 0.9rem; }
+    .card .meta { margin-top: 8px; font-size: 0.68rem; color: #303030; }
+
+    /* ── CARD ACTIONS UNIFIED CLEAN STYLE ── */
+    .card-actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
       margin-top: 10px;
-      font-size: 0.68rem;
-      color: #303030;
+      border-top: 1px solid #1e1e1e;
+      padding-top: 8px;
     }
 
-    /* slightly bigger cards in center bottom */
-    .col-bottom .card p { font-size: 0.9rem; }
-
-    /* ── LOADING / EMPTY ── */
-    .loading-grid {
-      grid-column: 1 / 4;
-      text-align: center;
-      padding: 60px 20px;
-      color: #333;
-      font-size: 0.85rem;
+    .btn-like, .btn-reply {
+      background: none;
+      border: none;
+      color: #383838;
+      font-size: 0.72rem;
+      cursor: pointer;
+      padding: 4px 0;
+      border-radius: 4px;
+      transition: color 0.15s;
+      letter-spacing: 0.02em;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
     }
+    .btn-like:hover, .btn-reply:hover { color: #a78bfa; }
+    .btn-like.liked { color: #7c3aed; font-weight: 500; }
+
+    /* Highlight own posts subtly instead of breaking/hiding actions */
+    .card.own-post { border-color: #231942; }
+
+    /* ── REPLIES ── */
+    .replies-section { margin-top: 8px; }
+
+    .reply-input-wrap {
+      display: none;
+      gap: 6px;
+      margin-top: 8px;
+      margin-bottom: 6px;
+    }
+    .reply-input-wrap.open { display: flex; }
+    .reply-input-wrap textarea {
+      height: 52px;
+      font-size: 0.78rem;
+      padding: 8px 10px;
+      border-radius: 8px;
+      flex: 1;
+    }
+
+    .btn-send-reply {
+      background: #7c3aed;
+      border: none;
+      color: #fff;
+      border-radius: 8px;
+      padding: 0 12px;
+      font-size: 0.75rem;
+      cursor: pointer;
+      white-space: nowrap;
+      align-self: flex-end;
+      height: 36px;
+      transition: background 0.15s;
+    }
+    .btn-send-reply:hover    { background: #6d28d9; }
+    .btn-send-reply:disabled { background: #3b2070; cursor: not-allowed; }
+
+    .replies-list { display: flex; flex-direction: column; gap: 6px; }
+
+    .reply-item {
+      background: #0f0f0f;
+      border-left: 2px solid #2a2a2a;
+      border-radius: 0 7px 7px 0;
+      padding: 8px 10px;
+      font-size: 0.78rem;
+      color: #999;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .reply-item .reply-meta { font-size: 0.65rem; color: #2a2a2a; margin-top: 4px; }
+
+    /* ── ADMIN ── */
+    .del { display: none; }
+    body.admin .del {
+      display: block;
+      position: absolute;
+      top: 8px; right: 10px;
+      background: none;
+      border: none;
+      color: #ef4444;
+      font-size: 0.7rem;
+      cursor: pointer;
+      opacity: 0.5;
+    }
+    body.admin .del:hover { opacity: 1; }
 
     /* ── TOAST ── */
     .toast {
@@ -173,26 +342,25 @@
     }
     .toast.show { transform: translateX(-50%) translateY(0); }
 
-    /* ── ADMIN DELETE ── */
-    .del { display: none; }
-    body.admin .del {
-      display: block;
-      position: absolute;
-      top: 8px; right: 10px;
-      background: none;
-      border: none;
-      color: #ef4444;
-      font-size: 0.7rem;
-      cursor: pointer;
-      opacity: 0.5;
+    /* ── NOTICE BAR ── */
+    .notice-bar {
+      width: 100%;
+      text-align: center;
+      padding: 14px 20px;
+      background: #100e1a;
+      border-top: 1px solid #1e1e1e;
+      font-size: 0.76rem;
+      color: #444;
+      line-height: 1.7;
+      margin-top: auto;
     }
-    body.admin .del:hover { opacity: 1; }
+    .notice-bar strong { color: #7c3aed; }
 
     /* ── FOOTER ── */
     footer {
-      grid-column: 1 / 4;
+      width: 100%;
       text-align: center;
-      padding: 24px 20px;
+      padding: 16px 20px;
       color: #1e1e1e;
       font-size: 0.72rem;
       border-top: 1px solid #141414;
@@ -200,80 +368,104 @@
       cursor: default;
     }
 
-    /* ── MOBILE: stack everything ── */
+    /* ── MOBILE ── */
     @media (max-width: 860px) {
-      .page {
-        display: flex;
-        flex-direction: column;
-      }
-      .col-left, .col-right, .col-bottom {
-        border: none;
-        padding: 0 16px;
-      }
+      .content-grid { display: flex; flex-direction: column; }
+      .col-left, .col-right, .col-bottom { border: none; padding: 0 16px 20px; }
       .center-box { padding: 10px 16px 20px; }
       .header { padding: 36px 16px 16px; }
-      footer { grid-column: unset; }
+      .live-counter { position: absolute; top: 52px; right: 16px; }
     }
   </style>
 </head>
 <body>
 
+<div class="top-ticker-banner">
+  <div class="ticker-wrapper">
+    <span class="ticker-item">⚠️ Feel offended by any confession? Simply hit Reply and type <strong>#takedown</strong> — the administration team will prioritize review and process manually. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ⚠️ Feel offended by any confession? Simply hit Reply and type <strong>#takedown</strong> — the administration team will prioritize review and process manually.</span>
+  </div>
+</div>
+
+<div class="live-counter">
+  <div class="live-counter-dot"></div>
+  Confessions: <span id="countVal">0</span>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <div class="page" id="page">
 
-  <!-- HEADER -->
   <div class="header">
     <h1>MMU <span>Secrets</span></h1>
     <p>Anonymous. No login. No judgment.</p>
   </div>
 
-  <!-- CENTER: post box -->
   <div class="center-box">
     <div class="post-label">post your confession here</div>
     <textarea id="txt" placeholder="What's your secret…"></textarea>
-    <button class="post" id="postBtn" onclick="postSecret()">Post Anonymously</button>
+    <button class="post" id="postBtn">Post Anonymously</button>
   </div>
 
-  <!-- LEFT column — filled by JS -->
-  <div class="col-left"  id="colLeft"></div>
+  <div class="content-grid">
+    <div class="col-left"  id="colLeft"></div>
+    <div class="col-bottom" id="colBottom"></div>
+    <div class="col-right" id="colRight"></div>
+  </div>
 
-  <!-- RIGHT column — filled by JS -->
-  <div class="col-right" id="colRight"></div>
+  <div class="notice-bar">
+    😔 Feel offended by any post? Reply to it and include <strong>#takedown</strong> — the admin will review and delete it manually.
+  </div>
 
-  <!-- BOTTOM center — filled by JS -->
-  <div class="col-bottom" id="colBottom"></div>
-
-  <!-- FOOTER -->
   <footer id="footer">MMU Secrets · anonymous forever</footer>
 
 </div>
 
 <script type="module">
-  import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getFirestore, collection, addDoc,
-           onSnapshot, query, orderBy,
-           deleteDoc, doc, serverTimestamp }
-    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc, onSnapshot,
+    query, orderBy, deleteDoc, doc, serverTimestamp,
+    updateDoc, increment
+  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const firebaseConfig = {
-    apiKey:            "AIzaSyDlegLoSoqjwxm7UBg9u2LG93NYW1GqEog",
-    authDomain:        "haswinmmuhenry.firebaseapp.com",
-    projectId:         "haswinmmuhenry",
-    storageBucket:     "haswinmmuhenry.firebasestorage.app",
+    apiKey:         "AIzaSyDlegLoSoqjwxm7UBg9u2LG93NYW1GqEog",
+    authDomain:     "haswinmmuhenry.firebaseapp.com",
+    projectId:      "haswinmmuhenry",
+    storageBucket:  "haswinmmuhenry.firebasestorage.app",
     messagingSenderId: "719747850913",
     appId:             "1:719747850913:web:e8ed8f0ada88095b1786e0"
   };
 
   const ADMIN_PASS = "mmusecrets2024";
-
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
 
-  // ── Live feed ─────────────────────────────────────────────────
+  const getLiked    = () => JSON.parse(localStorage.getItem("mmu_liked") || "[]");
+  const setLiked    = arr => localStorage.setItem("mmu_liked", JSON.stringify(arr));
+
+  const getOwnPosts = () => JSON.parse(sessionStorage.getItem("mmu_own") || "[]");
+  const addOwnPost  = id => sessionStorage.setItem("mmu_own", JSON.stringify([...getOwnPosts(), id]));
+
+  function showSkeletons() {
+    const skelly = () => `
+      <div class="skeleton">
+        <div class="skel-line long"></div>
+        <div class="skel-line med"></div>
+        <div class="skel-line short"></div>
+        <div class="skel-line xshort"></div>
+      </div>`;
+    document.getElementById("colLeft").innerHTML   = skelly() + skelly();
+    document.getElementById("colRight").innerHTML  = skelly() + skelly();
+    document.getElementById("colBottom").innerHTML = skelly();
+  }
+  showSkeletons();
+
   const q = query(collection(db, "secrets"), orderBy("ts", "desc"));
 
   onSnapshot(q, snap => {
+    document.getElementById("countVal").textContent = snap.size;
+
     const left   = document.getElementById("colLeft");
     const right  = document.getElementById("colRight");
     const bottom = document.getElementById("colBottom");
@@ -285,54 +477,139 @@
       return;
     }
 
-    const docs = snap.docs;
+    const ownPosts = getOwnPosts();
 
-    docs.forEach((d, i) => {
-      const p  = d.data();
-      const ms = p.ts?.toMillis?.() ?? Date.now();
-      const card = `<div class="card">
-        <button class="del" onclick="window._del('${d.id}')">✕</button>
-        <p>${esc(p.text)}</p>
+    snap.docs.forEach((d, i) => {
+      const p     = d.data();
+      const ms    = p.ts?.toMillis?.() ?? Date.now();
+      const liked = getLiked().includes(d.id);
+      const likes = p.likes || 0;
+      const isOwn = ownPosts.includes(d.id);
+
+      const card = document.createElement("div");
+      card.className = "card" + (isOwn ? " own-post" : "");
+      card.id = "card-" + d.id;
+      card.innerHTML = `
+        <button class="del">✕</button>
+        <p class="secret-text">${esc(p.text)}</p>
         <div class="meta">${timeAgo(ms)}</div>
-      </div>`;
+        <div class="card-actions">
+          <button class="btn-like${liked ? ' liked' : ''}" id="like-${d.id}">
+            Like (${likes})
+          </button>
+          <button class="btn-reply">Reply</button>
+        </div>
+        <div class="replies-section" id="replies-${d.id}">
+          <div class="reply-input-wrap" id="reply-input-${d.id}">
+            <textarea placeholder="Reply anonymously… (write #takedown to report)" id="reply-txt-${d.id}"></textarea>
+            <button class="btn-send-reply" id="reply-btn-${d.id}">Send</button>
+          </div>
+          <div class="replies-list" id="replies-list-${d.id}"></div>
+        </div>
+      `;
 
-      // Distribute: left, right, bottom cycling
+      card.querySelector('.del').addEventListener('click', () => delSecret(d.id));
+      card.querySelector('.btn-like').addEventListener('click', () => likeSecret(d.id));
+      card.querySelector('.btn-reply').addEventListener('click', () => toggleReply(d.id));
+      card.querySelector('.btn-send-reply').addEventListener('click', () => sendReply(d.id));
+
       const slot = i % 3;
-      if (slot === 0) left.innerHTML  += card;
-      if (slot === 1) right.innerHTML += card;
-      if (slot === 2) bottom.innerHTML += card;
+      if (slot === 0) left.appendChild(card);
+      if (slot === 1) right.appendChild(card);
+      if (slot === 2) bottom.appendChild(card);
+
+      loadReplies(d.id);
     });
+
   }, err => {
-    console.error(err);
     document.getElementById("colBottom").innerHTML =
       `<div style='color:#ef4444;text-align:center;padding:20px;font-size:0.85rem'>Error: ${err.code}<br><small>${err.message}</small></div>`;
   });
 
-  // ── Post ──────────────────────────────────────────────────────
-  window.postSecret = async function () {
+  function loadReplies(postId) {
+    const rq = query(collection(db, "secrets", postId, "replies"), orderBy("ts", "asc"));
+    onSnapshot(rq, snap => {
+      const list = document.getElementById("replies-list-" + postId);
+      if (!list) return;
+      list.innerHTML = "";
+      snap.docs.forEach(rd => {
+        const r  = rd.data();
+        const ms = r.ts?.toMillis?.() ?? Date.now();
+        const item = document.createElement("div");
+        item.className = "reply-item";
+        item.innerHTML = `${esc(r.text)}<div class="reply-meta">${timeAgo(ms)}</div>`;
+        list.appendChild(item);
+      });
+    });
+  }
+
+  async function postSecret() {
     const txt = document.getElementById("txt").value.trim();
     if (!txt) return;
     const btn = document.getElementById("postBtn");
     btn.disabled = true; btn.textContent = "Posting…";
     try {
-      await addDoc(collection(db, "secrets"), { text: txt, ts: serverTimestamp() });
+      const ref = await addDoc(collection(db, "secrets"), {
+        text: txt, ts: serverTimestamp(), likes: 0
+      });
+      addOwnPost(ref.id);
       document.getElementById("txt").value = "";
       showToast("Posted ✓");
     } catch (e) {
-      console.error(e);
       showToast("Error: " + e.code);
     }
     btn.disabled = false; btn.textContent = "Post Anonymously";
-  };
+  }
+  document.getElementById("postBtn").addEventListener("click", postSecret);
 
-  // ── Delete ────────────────────────────────────────────────────
-  window._del = async function (id) {
+  function toggleReply(postId) {
+    const wrap = document.getElementById("reply-input-" + postId);
+    if (!wrap) return;
+    wrap.classList.toggle("open");
+    if (wrap.classList.contains("open")) document.getElementById("reply-txt-" + postId)?.focus();
+  }
+
+  async function sendReply(postId) {
+    const txtEl = document.getElementById("reply-txt-" + postId);
+    const btn   = document.getElementById("reply-btn-" + postId);
+    if (!txtEl) return;
+    const txt = txtEl.value.trim();
+    if (!txt) return;
+    btn.disabled = true; btn.textContent = "Sending…";
+    try {
+      await addDoc(collection(db, "secrets", postId, "replies"), {
+        text: txt, ts: serverTimestamp()
+      });
+      txtEl.value = "";
+      document.getElementById("reply-input-" + postId)?.classList.remove("open");
+      showToast(txt.toLowerCase().includes("#takedown") ? "Report submitted. Admin will review." : "Reply posted ✓");
+    } catch (e) {
+      showToast("Error: " + e.code);
+    }
+    btn.disabled = false; btn.textContent = "Send";
+  }
+
+  async function likeSecret(postId) {
+    const liked = getLiked();
+    if (liked.includes(postId)) return;
+    try {
+      await updateDoc(doc(db, "secrets", postId), { likes: increment(1) });
+      setLiked([...liked, postId]);
+      const btn = document.getElementById("like-" + postId);
+      if (btn) {
+        btn.classList.add("liked");
+      }
+    } catch (e) {
+      showToast("Error: " + e.code);
+    }
+  }
+
+  async function delSecret(id) {
     if (!document.body.classList.contains("admin")) return;
     try { await deleteDoc(doc(db, "secrets", id)); }
     catch (e) { showToast("Delete failed: " + e.code); }
-  };
+  }
 
-  // ── Admin: tap footer 5× quickly ─────────────────────────────
   let taps = 0, tapTimer;
   document.getElementById("footer").addEventListener("click", () => {
     taps++; clearTimeout(tapTimer);
@@ -344,14 +621,12 @@
     }
   });
 
-  // ── Ctrl/Cmd+Enter ────────────────────────────────────────────
   document.getElementById("txt").addEventListener("keydown", e => {
-    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") window.postSecret();
+    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") postSecret();
   });
 
-  // ── Helpers ───────────────────────────────────────────────────
   function esc(s) {
-    return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   }
   function timeAgo(ts) {
     const d = Date.now() - ts;
@@ -365,7 +640,7 @@
     const t = document.getElementById("toast");
     t.textContent = msg; t.classList.add("show");
     clearTimeout(toastT);
-    toastT = setTimeout(() => t.classList.remove("show"), 2500);
+    toastT = setTimeout(() => t.classList.remove("show"), 2800);
   }
 </script>
 </body>
