@@ -7,375 +7,66 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Playfair+Display:wght@700&display=swap" rel="stylesheet" />
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      background: #0d0d0d;
-      color: #e8e8e8;
-      font-family: 'Inter', sans-serif;
-      min-height: 100vh;
-      overflow-x: hidden;
-    }
-
-    /* ── RUNNING TICKER BANNER ── */
-    .top-ticker-banner {
-      width: 100%;
-      background: #120e21;
-      border-bottom: 1px solid #1e1a3a;
-      overflow: hidden;
-      position: fixed;
-      top: 0;
-      left: 0;
-      z-index: 100;
-      white-space: nowrap;
-      padding: 8px 0;
-    }
-    .ticker-wrapper {
-      display: inline-block;
-      padding-left: 100%;
-      animation: ticker-move 30s linear infinite;
-    }
-    .ticker-item {
-      display: inline-block;
-      font-size: 0.75rem;
-      color: #a78bfa;
-      letter-spacing: 0.03em;
-    }
-    .ticker-item strong {
-      color: #ff4444;
-      background: rgba(255, 68, 68, 0.1);
-      padding: 2px 6px;
-      border-radius: 4px;
-    }
-    @keyframes ticker-move {
-      0% { transform: translate3d(0, 0, 0); }
-      100% { transform: translate3d(-100%, 0, 0); }
-    }
-
-    /* ── LIVE COUNTER ── */
-    .live-counter {
-      position: fixed;
-      top: 52px;
-      right: 20px;
-      z-index: 90;
-      font-size: 0.72rem;
-      font-weight: 500;
-      color: #666;
-      background: rgba(20, 20, 20, 0.6);
-      padding: 6px 12px;
-      border-radius: 20px;
-      border: 1px solid #1a1a1a;
-      backdrop-filter: blur(4px);
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-    .live-counter-dot {
-      width: 6px;
-      height: 6px;
-      background: #10b981;
-      border-radius: 50%;
-      box-shadow: 0 0 8px #10b981;
-      animation: pulse 2s infinite;
-    }
+    body { background: #0d0d0d; color: #e8e8e8; font-family: 'Inter', sans-serif; min-height: 100vh; overflow-x: hidden; }
+    .top-ticker-banner { width: 100%; background: #120e21; border-bottom: 1px solid #1e1a3a; overflow: hidden; position: fixed; top: 0; left: 0; z-index: 100; white-space: nowrap; padding: 8px 0; }
+    .ticker-wrapper { display: inline-block; padding-left: 100%; animation: ticker-move 30s linear infinite; }
+    .ticker-item { display: inline-block; font-size: 0.75rem; color: #a78bfa; letter-spacing: 0.03em; }
+    .ticker-item strong { color: #ff4444; background: rgba(255,68,68,0.1); padding: 2px 6px; border-radius: 4px; }
+    @keyframes ticker-move { 0% { transform: translate3d(0,0,0); } 100% { transform: translate3d(-100%,0,0); } }
+    .live-counter { position: fixed; top: 52px; right: 20px; z-index: 90; font-size: 0.72rem; font-weight: 500; color: #666; background: rgba(20,20,20,0.6); padding: 6px 12px; border-radius: 20px; border: 1px solid #1a1a1a; backdrop-filter: blur(4px); letter-spacing: 0.04em; text-transform: uppercase; display: flex; align-items: center; gap: 6px; }
+    .live-counter-dot { width: 6px; height: 6px; background: #10b981; border-radius: 50%; box-shadow: 0 0 8px #10b981; animation: pulse 2s infinite; }
     .live-counter span { color: #fff; }
-    @keyframes pulse {
-      0% { opacity: 0.4; }
-      50% { opacity: 1; }
-      100% { opacity: 0.4; }
-    }
-
-    /* ── PAGE LAYOUT ── */
-    .page {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-      padding-top: 40px;
-    }
-
-    .header {
-      text-align: center;
-      padding: 44px 20px 20px;
-      width: 100%;
-    }
+    @keyframes pulse { 0% { opacity: 0.4; } 50% { opacity: 1; } 100% { opacity: 0.4; } }
+    .page { display: flex; flex-direction: column; align-items: center; min-height: 100vh; padding-top: 40px; }
+    .header { text-align: center; padding: 44px 20px 20px; width: 100%; }
     .header h1 { font-family: 'Playfair Display', serif; font-size: 2rem; color: #fff; }
     .header h1 span { color: #a78bfa; }
     .header p { margin-top: 6px; color: #444; font-size: 0.82rem; }
-
-    .center-box {
-      width: 100%;
-      max-width: 420px;
-      padding: 10px 16px 30px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .post-label {
-      font-size: 0.72rem;
-      color: #555;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-
-    textarea {
-      width: 100%;
-      height: 110px;
-      background: #1a1a1a;
-      border: 1px solid #2a2a2a;
-      border-radius: 12px;
-      padding: 14px;
-      color: #e8e8e8;
-      font-family: 'Inter', sans-serif;
-      font-size: 0.9rem;
-      resize: none;
-      outline: none;
-      transition: border-color 0.2s;
-    }
+    .center-box { width: 100%; max-width: 420px; padding: 10px 16px 30px; display: flex; flex-direction: column; align-items: center; }
+    .post-label { font-size: 0.72rem; color: #555; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
+    textarea { width: 100%; height: 110px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 14px; color: #e8e8e8; font-family: 'Inter', sans-serif; font-size: 0.9rem; resize: none; outline: none; transition: border-color 0.2s; }
     textarea:focus { border-color: #7c3aed; }
     textarea::placeholder { color: #383838; }
-
-    button.post {
-      width: 100%;
-      margin-top: 8px;
-      padding: 11px;
-      background: #7c3aed;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      font-size: 0.88rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.18s;
-    }
+    button.post { width: 100%; margin-top: 8px; padding: 11px; background: #7c3aed; color: #fff; border: none; border-radius: 10px; font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: background 0.18s; }
     button.post:hover { background: #6d28d9; }
     button.post:disabled { background: #3b2070; cursor: not-allowed; }
-
-    /* ── ISOLATED STREAM CONTENT GRID ── */
-    .content-grid {
-      display: grid;
-      grid-template-columns: 1fr 420px 1fr;
-      width: 100%;
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-
-    .col-left {
-      padding: 10px 12px 40px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      border-right: 1px solid #1a1a1a;
-    }
-    .col-bottom {
-      padding: 10px 16px 40px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .col-right {
-      padding: 10px 20px 40px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      border-left: 1px solid #1a1a1a;
-    }
-
-    /* ── SKELETON LOADER ── */
-    .skeleton {
-      background: #141414;
-      border: 1px solid #1e1e1e;
-      border-radius: 11px;
-      padding: 14px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .skel-line {
-      height: 10px;
-      border-radius: 5px;
-      background: linear-gradient(90deg, #1e1e1e 25%, #252525 50%, #1e1e1e 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.4s infinite;
-    }
-    .skel-line.short { width: 40%; }
-    .skel-line.med   { width: 70%; }
-    .skel-line.long  { width: 90%; }
-    .skel-line.xshort{ width: 25%; height: 8px; margin-top: 4px; }
-    @keyframes shimmer {
-      0%   { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-
-    /* ── CARD ── */
-    .card {
-      background: #141414;
-      border: 1px solid #1e1e1e;
-      border-radius: 11px;
-      padding: 14px 16px 10px;
-      transition: border-color 0.2s;
-      position: relative;
-    }
+    .content-grid { display: grid; grid-template-columns: 1fr 420px 1fr; width: 100%; max-width: 1400px; margin: 0 auto; }
+    .col-left { padding: 10px 12px 40px 20px; display: flex; flex-direction: column; gap: 12px; border-right: 1px solid #1a1a1a; }
+    .col-bottom { padding: 10px 16px 40px; display: flex; flex-direction: column; gap: 12px; }
+    .col-right { padding: 10px 20px 40px 12px; display: flex; flex-direction: column; gap: 12px; border-left: 1px solid #1a1a1a; }
+    .skeleton { background: #141414; border: 1px solid #1e1e1e; border-radius: 11px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+    .skel-line { height: 10px; border-radius: 5px; background: linear-gradient(90deg,#1e1e1e 25%,#252525 50%,#1e1e1e 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
+    .skel-line.short { width: 40%; } .skel-line.med { width: 70%; } .skel-line.long { width: 90%; } .skel-line.xshort { width: 25%; height: 8px; margin-top: 4px; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .card { background: #141414; border: 1px solid #1e1e1e; border-radius: 11px; padding: 14px 16px 10px; transition: border-color 0.2s; position: relative; }
     .card:hover { border-color: #2a2a2a; }
-    .card > p.secret-text {
-      font-size: 0.85rem;
-      line-height: 1.65;
-      color: #ccc;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
+    .card > p.secret-text { font-size: 0.85rem; line-height: 1.65; color: #ccc; white-space: pre-wrap; word-break: break-word; }
     .col-bottom .card > p.secret-text { font-size: 0.9rem; }
     .card .meta { margin-top: 8px; font-size: 0.68rem; color: #303030; }
-
-    /* ── CARD ACTIONS UNIFIED CLEAN STYLE ── */
-    .card-actions {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-top: 10px;
-      border-top: 1px solid #1e1e1e;
-      padding-top: 8px;
-    }
-
-    .btn-like, .btn-reply {
-      background: none;
-      border: none;
-      color: #383838;
-      font-size: 0.72rem;
-      cursor: pointer;
-      padding: 4px 0;
-      border-radius: 4px;
-      transition: color 0.15s;
-      letter-spacing: 0.02em;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
+    .card-actions { display: flex; align-items: center; gap: 16px; margin-top: 10px; border-top: 1px solid #1e1e1e; padding-top: 8px; }
+    .btn-like, .btn-reply { background: none; border: none; color: #383838; font-size: 0.72rem; cursor: pointer; padding: 4px 0; border-radius: 4px; transition: color 0.15s; letter-spacing: 0.02em; display: inline-flex; align-items: center; gap: 4px; }
     .btn-like:hover, .btn-reply:hover { color: #a78bfa; }
     .btn-like.liked { color: #7c3aed; font-weight: 500; }
-
-    /* Highlight own posts subtly instead of breaking/hiding actions */
     .card.own-post { border-color: #231942; }
-
-    /* ── REPLIES ── */
     .replies-section { margin-top: 8px; }
-
-    .reply-input-wrap {
-      display: none;
-      gap: 6px;
-      margin-top: 8px;
-      margin-bottom: 6px;
-    }
+    .reply-input-wrap { display: none; gap: 6px; margin-top: 8px; margin-bottom: 6px; }
     .reply-input-wrap.open { display: flex; }
-    .reply-input-wrap textarea {
-      height: 52px;
-      font-size: 0.78rem;
-      padding: 8px 10px;
-      border-radius: 8px;
-      flex: 1;
-    }
-
-    .btn-send-reply {
-      background: #7c3aed;
-      border: none;
-      color: #fff;
-      border-radius: 8px;
-      padding: 0 12px;
-      font-size: 0.75rem;
-      cursor: pointer;
-      white-space: nowrap;
-      align-self: flex-end;
-      height: 36px;
-      transition: background 0.15s;
-    }
-    .btn-send-reply:hover    { background: #6d28d9; }
+    .reply-input-wrap textarea { height: 52px; font-size: 0.78rem; padding: 8px 10px; border-radius: 8px; flex: 1; }
+    .btn-send-reply { background: #7c3aed; border: none; color: #fff; border-radius: 8px; padding: 0 12px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; align-self: flex-end; height: 36px; transition: background 0.15s; }
+    .btn-send-reply:hover { background: #6d28d9; }
     .btn-send-reply:disabled { background: #3b2070; cursor: not-allowed; }
-
     .replies-list { display: flex; flex-direction: column; gap: 6px; }
-
-    .reply-item {
-      background: #0f0f0f;
-      border-left: 2px solid #2a2a2a;
-      border-radius: 0 7px 7px 0;
-      padding: 8px 10px;
-      font-size: 0.78rem;
-      color: #999;
-      line-height: 1.55;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
+    .reply-item { background: #0f0f0f; border-left: 2px solid #2a2a2a; border-radius: 0 7px 7px 0; padding: 8px 10px; font-size: 0.78rem; color: #999; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
     .reply-item .reply-meta { font-size: 0.65rem; color: #2a2a2a; margin-top: 4px; }
-
-    /* ── ADMIN ── */
     .del { display: none; }
-    body.admin .del {
-      display: block;
-      position: absolute;
-      top: 8px; right: 10px;
-      background: none;
-      border: none;
-      color: #ef4444;
-      font-size: 0.7rem;
-      cursor: pointer;
-      opacity: 0.5;
-    }
+    body.admin .del { display: block; position: absolute; top: 8px; right: 10px; background: none; border: none; color: #ef4444; font-size: 0.7rem; cursor: pointer; opacity: 0.5; }
     body.admin .del:hover { opacity: 1; }
-
-    /* ── TOAST ── */
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(60px);
-      background: #1e1e1e;
-      border: 1px solid #2a2a2a;
-      color: #a78bfa;
-      padding: 10px 22px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      transition: transform 0.3s;
-      white-space: nowrap;
-      z-index: 99;
-    }
+    .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(60px); background: #1e1e1e; border: 1px solid #2a2a2a; color: #a78bfa; padding: 10px 22px; border-radius: 8px; font-size: 0.85rem; transition: transform 0.3s; white-space: nowrap; z-index: 99; }
     .toast.show { transform: translateX(-50%) translateY(0); }
-
-    /* ── NOTICE BAR ── */
-    .notice-bar {
-      width: 100%;
-      text-align: center;
-      padding: 14px 20px;
-      background: #100e1a;
-      border-top: 1px solid #1e1e1e;
-      font-size: 0.76rem;
-      color: #444;
-      line-height: 1.7;
-      margin-top: auto;
-    }
+    .notice-bar { width: 100%; text-align: center; padding: 14px 20px; background: #100e1a; border-top: 1px solid #1e1e1e; font-size: 0.76rem; color: #444; line-height: 1.7; margin-top: auto; }
     .notice-bar strong { color: #7c3aed; }
-
-    /* ── FOOTER ── */
-    footer {
-      width: 100%;
-      text-align: center;
-      padding: 16px 20px;
-      color: #1e1e1e;
-      font-size: 0.72rem;
-      border-top: 1px solid #141414;
-      user-select: none;
-      cursor: default;
-    }
-
-    /* ── MOBILE ── */
-    @media (max-width: 860px) {
-      .content-grid { display: flex; flex-direction: column; }
-      .col-left, .col-right, .col-bottom { border: none; padding: 0 16px 20px; }
-      .center-box { padding: 10px 16px 20px; }
-      .header { padding: 36px 16px 16px; }
-      .live-counter { position: absolute; top: 52px; right: 16px; }
-    }
+    footer { width: 100%; text-align: center; padding: 16px 20px; color: #1e1e1e; font-size: 0.72rem; border-top: 1px solid #141414; user-select: none; cursor: default; }
+    @media (max-width: 860px) { .content-grid { display: flex; flex-direction: column; } .col-left, .col-right, .col-bottom { border: none; padding: 0 16px 20px; } .center-box { padding: 10px 16px 20px; } .header { padding: 36px 16px 16px; } .live-counter { position: absolute; top: 52px; right: 16px; } }
   </style>
 </head>
 <body>
@@ -394,7 +85,6 @@
 <div class="toast" id="toast"></div>
 
 <div class="page" id="page">
-
   <div class="header">
     <h1>MMU <span>Secrets</span></h1>
     <p>Anonymous. No login. No judgment.</p>
@@ -417,7 +107,6 @@
   </div>
 
   <footer id="footer">MMU Secrets · anonymous forever</footer>
-
 </div>
 
 <script type="module">
@@ -428,33 +117,45 @@
     updateDoc, increment
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // FIREBASE CONFIG
+  // These values are injected at build time by GitHub Actions.
+  // They are never hardcoded here. See .github/workflows/deploy.yml.
+  // ─────────────────────────────────────────────────────────────────────────────
   const firebaseConfig = {
-    apiKey:         "AIzaSyDlegLoSoqjwxm7UBg9u2LG93NYW1GqEog",
-    authDomain:     "haswinmmuhenry.firebaseapp.com",
-    projectId:      "haswinmmuhenry",
-    storageBucket:  "haswinmmuhenry.firebasestorage.app",
-    messagingSenderId: "719747850913",
-    appId:             "1:719747850913:web:e8ed8f0ada88095b1786e0"
+    apiKey:            "%%FIREBASE_API_KEY%%",
+    authDomain:        "%%FIREBASE_AUTH_DOMAIN%%",
+    projectId:         "%%FIREBASE_PROJECT_ID%%",
+    storageBucket:     "%%FIREBASE_STORAGE_BUCKET%%",
+    messagingSenderId: "%%FIREBASE_MESSAGING_SENDER_ID%%",
+    appId:             "%%FIREBASE_APP_ID%%",
   };
 
-  const ADMIN_PASS = "mmusecrets2024";
+  // ─────────────────────────────────────────────────────────────────────────────
+  // ADMIN PASSWORD — stored as SHA-256 hash, never plaintext.
+  // To change your password:
+  //   1. Go to https://emn178.github.io/online-tools/sha256.html
+  //   2. Type your new password, copy the hash
+  //   3. Store the hash as GitHub Secret ADMIN_HASH
+  //   4. The build step below injects it here automatically
+  // ─────────────────────────────────────────────────────────────────────────────
+  const ADMIN_HASH = "%%ADMIN_HASH%%";
+
+  async function sha256(str) {
+    const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+  }
+
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
 
   const getLiked    = () => JSON.parse(localStorage.getItem("mmu_liked") || "[]");
   const setLiked    = arr => localStorage.setItem("mmu_liked", JSON.stringify(arr));
-
   const getOwnPosts = () => JSON.parse(sessionStorage.getItem("mmu_own") || "[]");
   const addOwnPost  = id => sessionStorage.setItem("mmu_own", JSON.stringify([...getOwnPosts(), id]));
 
   function showSkeletons() {
-    const skelly = () => `
-      <div class="skeleton">
-        <div class="skel-line long"></div>
-        <div class="skel-line med"></div>
-        <div class="skel-line short"></div>
-        <div class="skel-line xshort"></div>
-      </div>`;
+    const skelly = () => `<div class="skeleton"><div class="skel-line long"></div><div class="skel-line med"></div><div class="skel-line short"></div><div class="skel-line xshort"></div></div>`;
     document.getElementById("colLeft").innerHTML   = skelly() + skelly();
     document.getElementById("colRight").innerHTML  = skelly() + skelly();
     document.getElementById("colBottom").innerHTML = skelly();
@@ -465,11 +166,9 @@
 
   onSnapshot(q, snap => {
     document.getElementById("countVal").textContent = snap.size;
-
     const left   = document.getElementById("colLeft");
     const right  = document.getElementById("colRight");
     const bottom = document.getElementById("colBottom");
-
     left.innerHTML = right.innerHTML = bottom.innerHTML = "";
 
     if (snap.empty) {
@@ -478,7 +177,6 @@
     }
 
     const ownPosts = getOwnPosts();
-
     snap.docs.forEach((d, i) => {
       const p     = d.data();
       const ms    = p.ts?.toMillis?.() ?? Date.now();
@@ -494,9 +192,7 @@
         <p class="secret-text">${esc(p.text)}</p>
         <div class="meta">${timeAgo(ms)}</div>
         <div class="card-actions">
-          <button class="btn-like${liked ? ' liked' : ''}" id="like-${d.id}">
-            Like (${likes})
-          </button>
+          <button class="btn-like${liked ? ' liked' : ''}" id="like-${d.id}">Like (${likes})</button>
           <button class="btn-reply">Reply</button>
         </div>
         <div class="replies-section" id="replies-${d.id}">
@@ -505,22 +201,19 @@
             <button class="btn-send-reply" id="reply-btn-${d.id}">Send</button>
           </div>
           <div class="replies-list" id="replies-list-${d.id}"></div>
-        </div>
-      `;
+        </div>`;
 
       card.querySelector('.del').addEventListener('click', () => delSecret(d.id));
       card.querySelector('.btn-like').addEventListener('click', () => likeSecret(d.id));
       card.querySelector('.btn-reply').addEventListener('click', () => toggleReply(d.id));
       card.querySelector('.btn-send-reply').addEventListener('click', () => sendReply(d.id));
 
-      const slot = i % 3;
-      if (slot === 0) left.appendChild(card);
-      if (slot === 1) right.appendChild(card);
-      if (slot === 2) bottom.appendChild(card);
+      if (i % 3 === 0) left.appendChild(card);
+      else if (i % 3 === 1) right.appendChild(card);
+      else bottom.appendChild(card);
 
       loadReplies(d.id);
     });
-
   }, err => {
     document.getElementById("colBottom").innerHTML =
       `<div style='color:#ef4444;text-align:center;padding:20px;font-size:0.85rem'>Error: ${err.code}<br><small>${err.message}</small></div>`;
@@ -549,15 +242,11 @@
     const btn = document.getElementById("postBtn");
     btn.disabled = true; btn.textContent = "Posting…";
     try {
-      const ref = await addDoc(collection(db, "secrets"), {
-        text: txt, ts: serverTimestamp(), likes: 0
-      });
+      const ref = await addDoc(collection(db, "secrets"), { text: txt, ts: serverTimestamp(), likes: 0 });
       addOwnPost(ref.id);
       document.getElementById("txt").value = "";
       showToast("Posted ✓");
-    } catch (e) {
-      showToast("Error: " + e.code);
-    }
+    } catch (e) { showToast("Error: " + e.code); }
     btn.disabled = false; btn.textContent = "Post Anonymously";
   }
   document.getElementById("postBtn").addEventListener("click", postSecret);
@@ -577,15 +266,11 @@
     if (!txt) return;
     btn.disabled = true; btn.textContent = "Sending…";
     try {
-      await addDoc(collection(db, "secrets", postId, "replies"), {
-        text: txt, ts: serverTimestamp()
-      });
+      await addDoc(collection(db, "secrets", postId, "replies"), { text: txt, ts: serverTimestamp() });
       txtEl.value = "";
       document.getElementById("reply-input-" + postId)?.classList.remove("open");
       showToast(txt.toLowerCase().includes("#takedown") ? "Report submitted. Admin will review." : "Reply posted ✓");
-    } catch (e) {
-      showToast("Error: " + e.code);
-    }
+    } catch (e) { showToast("Error: " + e.code); }
     btn.disabled = false; btn.textContent = "Send";
   }
 
@@ -595,13 +280,8 @@
     try {
       await updateDoc(doc(db, "secrets", postId), { likes: increment(1) });
       setLiked([...liked, postId]);
-      const btn = document.getElementById("like-" + postId);
-      if (btn) {
-        btn.classList.add("liked");
-      }
-    } catch (e) {
-      showToast("Error: " + e.code);
-    }
+      document.getElementById("like-" + postId)?.classList.add("liked");
+    } catch (e) { showToast("Error: " + e.code); }
   }
 
   async function delSecret(id) {
@@ -610,14 +290,22 @@
     catch (e) { showToast("Delete failed: " + e.code); }
   }
 
+  // Hidden admin unlock: tap footer 5× rapidly
   let taps = 0, tapTimer;
-  document.getElementById("footer").addEventListener("click", () => {
+  document.getElementById("footer").addEventListener("click", async () => {
     taps++; clearTimeout(tapTimer);
     tapTimer = setTimeout(() => taps = 0, 800);
     if (taps >= 5) {
       taps = 0;
       const p = prompt("Admin password:");
-      if (p === ADMIN_PASS) { document.body.classList.add("admin"); showToast("Admin mode on 🔐"); }
+      if (!p) return;
+      const hash = await sha256(p);
+      if (hash === ADMIN_HASH) {
+        document.body.classList.add("admin");
+        showToast("Admin mode on 🔐");
+      } else {
+        showToast("Wrong password.");
+      }
     }
   });
 
