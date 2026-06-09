@@ -228,7 +228,7 @@
       word-break: break-word;
     }
     .col-bottom .card > p.secret-text { font-size: 0.9rem; }
-    .card .meta { margin-top: 8px; font-size: 0.68rem; color: #303030; }
+    .card .meta { margin-top: 8px; font-size: 0.68rem; color: #555; }
 
     /* ── CARD ACTIONS UNIFIED CLEAN STYLE ── */
     .card-actions {
@@ -243,7 +243,7 @@
     .btn-like, .btn-reply {
       background: none;
       border: none;
-      color: #383838;
+      color: #666;
       font-size: 0.72rem;
       cursor: pointer;
       padding: 4px 0;
@@ -294,20 +294,20 @@
     .btn-send-reply:hover    { background: #6d28d9; }
     .btn-send-reply:disabled { background: #3b2070; cursor: not-allowed; }
 
-    .replies-list { display: flex; flex-direction: column; gap: 6px; }
+    .replies-list { display: flex; flex-direction: column; gap: 6px; margin-top: 6px;}
 
     .reply-item {
-      background: #0f0f0f;
-      border-left: 2px solid #2a2a2a;
+      background: #222222; /* Boosted visibility from old layout */
+      border-left: 2px solid #7c3aed; /* Distinct purple line identifier */
       border-radius: 0 7px 7px 0;
       padding: 8px 10px;
       font-size: 0.78rem;
-      color: #999;
+      color: #ddd;
       line-height: 1.55;
       white-space: pre-wrap;
       word-break: break-word;
     }
-    .reply-item .reply-meta { font-size: 0.65rem; color: #2a2a2a; margin-top: 4px; }
+    .reply-item .reply-meta { font-size: 0.65rem; color: #666; margin-top: 4px; }
 
     /* ── ADMIN ── */
     .del { display: none; }
@@ -518,6 +518,7 @@
       if (slot === 1) right.appendChild(card);
       if (slot === 2) bottom.appendChild(card);
 
+      // Trigger load after element is safely appended inside the DOM tree
       loadReplies(d.id);
     });
 
@@ -529,8 +530,10 @@
   function loadReplies(postId) {
     const rq = query(collection(db, "secrets", postId, "replies"), orderBy("ts", "asc"));
     onSnapshot(rq, snap => {
+      // Look up target container inside active DOM scope layout
       const list = document.getElementById("replies-list-" + postId);
       if (!list) return;
+      
       list.innerHTML = "";
       snap.docs.forEach(rd => {
         const r  = rd.data();
