@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -28,23 +27,23 @@
       left: 0;
       z-index: 100;
       white-space: nowrap;
-      padding: 6px 0;
+      padding: 8px 0;
     }
     .ticker-wrapper {
       display: inline-block;
       padding-left: 100%;
-      animation: ticker-move 25s linear infinite;
+      animation: ticker-move 30s linear infinite;
     }
     .ticker-item {
       display: inline-block;
-      font-size: 0.72rem;
+      font-size: 0.75rem;
       color: #a78bfa;
       letter-spacing: 0.03em;
     }
     .ticker-item strong {
       color: #ff4444;
       background: rgba(255, 68, 68, 0.1);
-      padding: 1px 5px;
+      padding: 2px 6px;
       border-radius: 4px;
     }
     @keyframes ticker-move {
@@ -55,9 +54,9 @@
     .page {
       display: grid;
       grid-template-columns: 1fr 420px 1fr;
-      grid-template-rows: auto auto auto;
+      grid-template-rows: auto auto auto auto;
       min-height: 100vh;
-      padding-top: 30px; /* Offset for the fixed top banner */
+      padding-top: 40px; /* Offset for top ticker fixed bar */
     }
 
     .header {
@@ -119,31 +118,32 @@
     button.post:hover { background: #6d28d9; }
     button.post:disabled { background: #3b2070; cursor: not-allowed; }
 
+    /* Grid columns positioning adjusted cleanly */
     .col-left {
       grid-column: 1;
-      grid-row: 2 / 4;
-      padding: 10px 12px 40px 20px;
+      grid-row: 3;
+      padding: 20px 12px 40px 20px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
       border-right: 1px solid #1a1a1a;
-    }
-    .col-right {
-      grid-column: 3;
-      grid-row: 2 / 4;
-      padding: 10px 20px 40px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      border-left: 1px solid #1a1a1a;
     }
     .col-bottom {
       grid-column: 2;
       grid-row: 3;
-      padding: 0 16px 40px;
+      padding: 20px 16px 40px;
       display: flex;
       flex-direction: column;
-      gap: 10px;
+      gap: 12px;
+    }
+    .col-right {
+      grid-column: 3;
+      grid-row: 3;
+      padding: 20px 20px 40px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border-left: 1px solid #1a1a1a;
     }
 
     /* ── SKELETON LOADER ── */
@@ -169,7 +169,7 @@
     .skel-line.xshort{ width: 25%; height: 8px; margin-top: 4px; }
     @keyframes shimmer {
       0%   { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
+      100% { transform: translate3d(0, 0, 0); background-position: -200% 0; }
     }
 
     /* ── CARD ── */
@@ -320,6 +320,7 @@
     /* ── NOTICE BAR ── */
     .notice-bar {
       grid-column: 1 / 4;
+      grid-row: 4;
       text-align: center;
       padding: 14px 20px;
       background: #100e1a;
@@ -344,7 +345,7 @@
 
     /* ── MOBILE ── */
     @media (max-width: 860px) {
-      .page { display: flex; flex-direction: column; padding-top: 34px; }
+      .page { display: flex; flex-direction: column; padding-top: 36px; }
       .col-left, .col-right, .col-bottom { border: none; padding: 0 16px; }
       .center-box { padding: 10px 16px 20px; }
       .header { padding: 36px 16px 16px; }
@@ -376,8 +377,8 @@
   </div>
 
   <div class="col-left"  id="colLeft"></div>
-  <div class="col-right" id="colRight"></div>
   <div class="col-bottom" id="colBottom"></div>
+  <div class="col-right" id="colRight"></div>
 
   <div class="notice-bar">
     😔 Feel offended by any post? Reply to it and include <strong>#takedown</strong> — the admin will review and delete it manually.
@@ -428,8 +429,6 @@
   }
   showSkeletons();
 
-  let firstLoad = true;
-
   const q = query(collection(db, "secrets"), orderBy("ts", "desc"));
 
   onSnapshot(q, snap => {
@@ -441,7 +440,6 @@
 
     if (snap.empty) {
       bottom.innerHTML = "<div style='text-align:center;color:#333;font-size:0.85rem;padding:40px 0'>No secrets yet. Be the first.</div>";
-      firstLoad = false;
       return;
     }
 
@@ -458,19 +456,19 @@
       card.className = "card" + (isOwn ? " own-post" : "");
       card.id = "card-" + d.id;
       card.innerHTML = `
-        <button class="del" data-id="${d.id}">✕</button>
+        <button class="del">✕</button>
         <p class="secret-text">${esc(p.text)}</p>
         <div class="meta">${timeAgo(ms)}</div>
         <div class="card-actions">
-          <button class="btn-like${liked ? ' liked' : ''}" id="like-${d.id}" data-id="${d.id}">
+          <button class="btn-like${liked ? ' liked' : ''}" id="like-${d.id}">
             <span class="thumb">👍</span><span class="like-count">${likes}</span>
           </button>
-          <button class="btn-reply" data-id="${d.id}">Reply</button>
+          <button class="btn-reply">Reply</button>
         </div>
         <div class="replies-section" id="replies-${d.id}">
           <div class="reply-input-wrap" id="reply-input-${d.id}">
             <textarea placeholder="Reply anonymously… (write #takedown to report)" id="reply-txt-${d.id}"></textarea>
-            <button class="btn-send-reply" id="reply-btn-${d.id}" data-id="${d.id}">Send</button>
+            <button class="btn-send-reply" id="reply-btn-${d.id}">Send</button>
           </div>
           <div class="replies-list" id="replies-list-${d.id}"></div>
         </div>
@@ -489,7 +487,6 @@
       loadReplies(d.id);
     });
 
-    firstLoad = false;
   }, err => {
     document.getElementById("colBottom").innerHTML =
       `<div style='color:#ef4444;text-align:center;padding:20px;font-size:0.85rem'>Error: ${err.code}<br><small>${err.message}</small></div>`;
@@ -598,1060 +595,6 @@
 
   function esc(s) {
     return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-  }
-  function timeAgo(ts) {
-    const d = Date.now() - ts;
-    if (d < 60000)    return "just now";
-    if (d < 3600000)  return Math.floor(d/60000) + "m ago";
-    if (d < 86400000) return Math.floor(d/3600000) + "h ago";
-    return new Date(ts).toLocaleDateString("en-MY",{day:"numeric",month:"short",year:"numeric"});
-  }
-  let toastT;
-  function showToast(msg) {
-    const t = document.getElementById("toast");
-    t.textContent = msg; t.classList.add("show");
-    clearTimeout(toastT);
-    toastT = setTimeout(() => t.classList.remove("show"), 2800);
-  }
-</script>
-</body>
-</html>
-
-```      grid-row: 2;
-      padding: 10px 16px 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .post-label {
-      font-size: 0.72rem;
-      color: #555;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-
-    textarea {
-      width: 100%;
-      height: 110px;
-      background: #1a1a1a;
-      border: 1px solid #2a2a2a;
-      border-radius: 12px;
-      padding: 14px;
-      color: #e8e8e8;
-      font-family: 'Inter', sans-serif;
-      font-size: 0.9rem;
-      resize: none;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    textarea:focus { border-color: #7c3aed; }
-    textarea::placeholder { color: #383838; }
-
-    button.post {
-      width: 100%;
-      margin-top: 8px;
-      padding: 11px;
-      background: #7c3aed;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      font-size: 0.88rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.18s;
-    }
-    button.post:hover { background: #6d28d9; }
-    button.post:disabled { background: #3b2070; cursor: not-allowed; }
-
-    .col-left {
-      grid-column: 1;
-      grid-row: 2 / 4;
-      padding: 10px 12px 40px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      border-right: 1px solid #1a1a1a;
-    }
-    .col-right {
-      grid-column: 3;
-      grid-row: 2 / 4;
-      padding: 10px 20px 40px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      border-left: 1px solid #1a1a1a;
-    }
-    .col-bottom {
-      grid-column: 2;
-      grid-row: 3;
-      padding: 0 16px 40px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    /* ── SKELETON LOADER ── */
-    .skeleton {
-      background: #141414;
-      border: 1px solid #1e1e1e;
-      border-radius: 11px;
-      padding: 14px 16px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-    }
-    .skel-line {
-      height: 10px;
-      border-radius: 5px;
-      background: linear-gradient(90deg, #1e1e1e 25%, #252525 50%, #1e1e1e 75%);
-      background-size: 200% 100%;
-      animation: shimmer 1.4s infinite;
-    }
-    .skel-line.short { width: 40%; }
-    .skel-line.med   { width: 70%; }
-    .skel-line.long  { width: 90%; }
-    .skel-line.xshort{ width: 25%; height: 8px; margin-top: 4px; }
-    @keyframes shimmer {
-      0%   { background-position: 200% 0; }
-      100% { background-position: -200% 0; }
-    }
-
-    /* ── CARD ── */
-    .card {
-      background: #141414;
-      border: 1px solid #1e1e1e;
-      border-radius: 11px;
-      padding: 14px 16px 10px;
-      transition: border-color 0.2s;
-      position: relative;
-    }
-    .card:hover { border-color: #2a2a2a; }
-    .card > p.secret-text {
-      font-size: 0.85rem;
-      line-height: 1.65;
-      color: #ccc;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-    .col-bottom .card > p.secret-text { font-size: 0.9rem; }
-    .card .meta { margin-top: 8px; font-size: 0.68rem; color: #303030; }
-
-    /* ── CARD ACTIONS ── */
-    .card-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 10px;
-      border-top: 1px solid #1e1e1e;
-      padding-top: 8px;
-    }
-
-    .btn-like {
-      background: none;
-      border: 1px solid #252525;
-      border-radius: 8px;
-      color: #555;
-      font-size: 0.75rem;
-      padding: 4px 10px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      transition: all 0.18s;
-    }
-    .btn-like:hover  { border-color: #a78bfa; color: #a78bfa; }
-    .btn-like.liked  { border-color: #7c3aed; color: #a78bfa; background: #1e1530; }
-    .btn-like .thumb { font-size: 0.85rem; }
-
-    .btn-reply {
-      background: none;
-      border: none;
-      color: #383838;
-      font-size: 0.72rem;
-      cursor: pointer;
-      padding: 4px 6px;
-      border-radius: 6px;
-      transition: color 0.15s;
-      letter-spacing: 0.02em;
-    }
-    .btn-reply:hover { color: #7c3aed; }
-
-    /* own-post: hide actions entirely */
-    .card.own-post .card-actions { display: none; }
-
-    /* ── REPLIES ── */
-    .replies-section { margin-top: 8px; }
-
-    .reply-input-wrap {
-      display: none;
-      gap: 6px;
-      margin-top: 8px;
-      margin-bottom: 6px;
-    }
-    .reply-input-wrap.open { display: flex; }
-    .reply-input-wrap textarea {
-      height: 52px;
-      font-size: 0.78rem;
-      padding: 8px 10px;
-      border-radius: 8px;
-      flex: 1;
-    }
-
-    .btn-send-reply {
-      background: #7c3aed;
-      border: none;
-      color: #fff;
-      border-radius: 8px;
-      padding: 0 12px;
-      font-size: 0.75rem;
-      cursor: pointer;
-      white-space: nowrap;
-      align-self: flex-end;
-      height: 36px;
-      transition: background 0.15s;
-    }
-    .btn-send-reply:hover    { background: #6d28d9; }
-    .btn-send-reply:disabled { background: #3b2070; cursor: not-allowed; }
-
-    .replies-list { display: flex; flex-direction: column; gap: 6px; }
-
-    .reply-item {
-      background: #0f0f0f;
-      border-left: 2px solid #2a2a2a;
-      border-radius: 0 7px 7px 0;
-      padding: 8px 10px;
-      font-size: 0.78rem;
-      color: #999;
-      line-height: 1.55;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-    .reply-item .reply-meta { font-size: 0.65rem; color: #2a2a2a; margin-top: 4px; }
-
-    /* ── ADMIN ── */
-    .del { display: none; }
-    body.admin .del {
-      display: block;
-      position: absolute;
-      top: 8px; right: 10px;
-      background: none;
-      border: none;
-      color: #ef4444;
-      font-size: 0.7rem;
-      cursor: pointer;
-      opacity: 0.5;
-    }
-    body.admin .del:hover { opacity: 1; }
-
-    /* ── TOAST ── */
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(60px);
-      background: #1e1e1e;
-      border: 1px solid #2a2a2a;
-      color: #a78bfa;
-      padding: 10px 22px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      transition: transform 0.3s;
-      white-space: nowrap;
-      z-index: 99;
-    }
-    .toast.show { transform: translateX(-50%) translateY(0); }
-
-    /* ── NOTICE BAR ── */
-    .notice-bar {
-      grid-column: 1 / 4;
-      text-align: center;
-      padding: 14px 20px;
-      background: #100e1a;
-      border-top: 1px solid #1e1e1e;
-      font-size: 0.76rem;
-      color: #444;
-      line-height: 1.7;
-    }
-    .notice-bar strong { color: #7c3aed; }
-
-    /* ── FOOTER ── */
-    footer {
-      grid-column: 1 / 4;
-      text-align: center;
-      padding: 16px 20px;
-      color: #1e1e1e;
-      font-size: 0.72rem;
-      border-top: 1px solid #141414;
-      user-select: none;
-      cursor: default;
-    }
-
-    /* ── MOBILE ── */
-    @media (max-width: 860px) {
-      .page { display: flex; flex-direction: column; }
-      .col-left, .col-right, .col-bottom { border: none; padding: 0 16px; }
-      .center-box { padding: 10px 16px 20px; }
-      .header { padding: 36px 16px 16px; }
-      footer, .notice-bar { grid-column: unset; }
-    }
-  </style>
-</head>
-<body>
-
-<div class="toast" id="toast"></div>
-
-<div class="page" id="page">
-
-  <div class="header">
-    <h1>MMU <span>Secrets</span></h1>
-    <p>Anonymous. No login. No judgment.</p>
-  </div>
-
-  <div class="center-box">
-    <div class="post-label">post your confession here</div>
-    <textarea id="txt" placeholder="What's your secret…"></textarea>
-    <button class="post" id="postBtn" onclick="postSecret()">Post Anonymously</button>
-  </div>
-
-  <div class="col-left"  id="colLeft"></div>
-  <div class="col-right" id="colRight"></div>
-  <div class="col-bottom" id="colBottom"></div>
-
-  <div class="notice-bar">
-    😔 Feel offended by any post? Reply to it and include <strong>#takedown</strong> — the admin will review and delete it manually.
-  </div>
-
-  <footer id="footer">MMU Secrets · anonymous forever</footer>
-
-</div>
-
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import {
-    getFirestore, collection, addDoc, onSnapshot,
-    query, orderBy, deleteDoc, doc, serverTimestamp,
-    updateDoc, increment
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey:            "AIzaSyDlegLoSoqjwxm7UBg9u2LG93NYW1GqEog",
-    authDomain:        "haswinmmuhenry.firebaseapp.com",
-    projectId:         "haswinmmuhenry",
-    storageBucket:     "haswinmmuhenry.firebasestorage.app",
-    messagingSenderId: "719747850913",
-    appId:             "1:719747850913:web:e8ed8f0ada88095b1786e0"
-  };
-
-  const ADMIN_PASS = "mmusecrets2024";
-  const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
-
-  // Liked posts: persists across sessions
-  const getLiked    = () => JSON.parse(localStorage.getItem("mmu_liked") || "[]");
-  const setLiked    = arr => localStorage.setItem("mmu_liked", JSON.stringify(arr));
-
-  // Own posts: only lives for this browser session
-  const getOwnPosts = () => JSON.parse(sessionStorage.getItem("mmu_own") || "[]");
-  const addOwnPost  = id => sessionStorage.setItem("mmu_own", JSON.stringify([...getOwnPosts(), id]));
-
-  // ── Show skeletons immediately while Firebase loads ───────────
-  function showSkeletons() {
-    const skelly = () => `
-      <div class="skeleton">
-        <div class="skel-line long"></div>
-        <div class="skel-line med"></div>
-        <div class="skel-line short"></div>
-        <div class="skel-line xshort"></div>
-      </div>`;
-    document.getElementById("colLeft").innerHTML   = skelly() + skelly();
-    document.getElementById("colRight").innerHTML  = skelly() + skelly();
-    document.getElementById("colBottom").innerHTML = skelly();
-  }
-  showSkeletons();
-
-  let firstLoad = true;
-
-  // ── Live feed — latest first ───────────────────────────────────
-  const q = query(collection(db, "secrets"), orderBy("ts", "desc"));
-
-  onSnapshot(q, snap => {
-    const left   = document.getElementById("colLeft");
-    const right  = document.getElementById("colRight");
-    const bottom = document.getElementById("colBottom");
-
-    // Only wipe skeletons / re-render on first load or real changes
-    left.innerHTML = right.innerHTML = bottom.innerHTML = "";
-
-    if (snap.empty) {
-      bottom.innerHTML = "<div style='text-align:center;color:#333;font-size:0.85rem;padding:40px 0'>No secrets yet. Be the first.</div>";
-      firstLoad = false;
-      return;
-    }
-
-    const ownPosts = getOwnPosts();
-
-    snap.docs.forEach((d, i) => {
-      const p     = d.data();
-      const ms    = p.ts?.toMillis?.() ?? Date.now();
-      const liked = getLiked().includes(d.id);
-      const likes = p.likes || 0;
-      const isOwn = ownPosts.includes(d.id);
-
-      const card = document.createElement("div");
-      card.className = "card" + (isOwn ? " own-post" : "");
-      card.id = "card-" + d.id;
-      card.innerHTML = `
-        <button class="del" onclick="window._del('${d.id}')">✕</button>
-        <p class="secret-text">${esc(p.text)}</p>
-        <div class="meta">${timeAgo(ms)}</div>
-        <div class="card-actions">
-          <button class="btn-like${liked ? ' liked' : ''}" id="like-${d.id}" onclick="window._like('${d.id}')">
-            <span class="thumb">👍</span><span class="like-count">${likes}</span>
-          </button>
-          <button class="btn-reply" onclick="window._toggleReply('${d.id}')">Reply</button>
-        </div>
-        <div class="replies-section" id="replies-${d.id}">
-          <div class="reply-input-wrap" id="reply-input-${d.id}">
-            <textarea placeholder="Reply anonymously… (write #takedown to report)" id="reply-txt-${d.id}"></textarea>
-            <button class="btn-send-reply" id="reply-btn-${d.id}" onclick="window._sendReply('${d.id}')">Send</button>
-          </div>
-          <div class="replies-list" id="replies-list-${d.id}"></div>
-        </div>
-      `;
-
-      const slot = i % 3;
-      if (slot === 0) left.appendChild(card);
-      if (slot === 1) right.appendChild(card);
-      if (slot === 2) bottom.appendChild(card);
-
-      loadReplies(d.id);
-    });
-
-    firstLoad = false;
-  }, err => {
-    document.getElementById("colBottom").innerHTML =
-      `<div style='color:#ef4444;text-align:center;padding:20px;font-size:0.85rem'>Error: ${err.code}<br><small>${err.message}</small></div>`;
-  });
-
-  // ── Load replies live ─────────────────────────────────────────
-  function loadReplies(postId) {
-    const rq = query(collection(db, "secrets", postId, "replies"), orderBy("ts", "asc"));
-    onSnapshot(rq, snap => {
-      const list = document.getElementById("replies-list-" + postId);
-      if (!list) return;
-      list.innerHTML = "";
-      snap.docs.forEach(rd => {
-        const r  = rd.data();
-        const ms = r.ts?.toMillis?.() ?? Date.now();
-        const item = document.createElement("div");
-        item.className = "reply-item";
-        item.innerHTML = `${esc(r.text)}<div class="reply-meta">${timeAgo(ms)}</div>`;
-        list.appendChild(item);
-      });
-    });
-  }
-
-  // ── Post ──────────────────────────────────────────────────────
-  window.postSecret = async function () {
-    const txt = document.getElementById("txt").value.trim();
-    if (!txt) return;
-    const btn = document.getElementById("postBtn");
-    btn.disabled = true; btn.textContent = "Posting…";
-    try {
-      const ref = await addDoc(collection(db, "secrets"), {
-        text: txt, ts: serverTimestamp(), likes: 0
-      });
-      addOwnPost(ref.id);  // mark as own so like/reply hidden on this session
-      document.getElementById("txt").value = "";
-      showToast("Posted ✓");
-    } catch (e) {
-      showToast("Error: " + e.code);
-    }
-    btn.disabled = false; btn.textContent = "Post Anonymously";
-  };
-
-  // ── Toggle reply input ────────────────────────────────────────
-  window._toggleReply = function (postId) {
-    const wrap = document.getElementById("reply-input-" + postId);
-    if (!wrap) return;
-    wrap.classList.toggle("open");
-    if (wrap.classList.contains("open")) document.getElementById("reply-txt-" + postId)?.focus();
-  };
-
-  // ── Send reply ────────────────────────────────────────────────
-  window._sendReply = async function (postId) {
-    const txtEl = document.getElementById("reply-txt-" + postId);
-    const btn   = document.getElementById("reply-btn-" + postId);
-    if (!txtEl) return;
-    const txt = txtEl.value.trim();
-    if (!txt) return;
-    btn.disabled = true; btn.textContent = "Sending…";
-    try {
-      await addDoc(collection(db, "secrets", postId, "replies"), {
-        text: txt, ts: serverTimestamp()
-      });
-      txtEl.value = "";
-      document.getElementById("reply-input-" + postId)?.classList.remove("open");
-      showToast(txt.toLowerCase().includes("#takedown") ? "Report submitted. Admin will review." : "Reply posted ✓");
-    } catch (e) {
-      showToast("Error: " + e.code);
-    }
-    btn.disabled = false; btn.textContent = "Send";
-  };
-
-  // ── Like ──────────────────────────────────────────────────────
-  window._like = async function (postId) {
-    const liked = getLiked();
-    if (liked.includes(postId)) return;
-    try {
-      await updateDoc(doc(db, "secrets", postId), { likes: increment(1) });
-      setLiked([...liked, postId]);
-      const btn = document.getElementById("like-" + postId);
-      if (btn) {
-        btn.classList.add("liked");
-        const count = btn.querySelector(".like-count");
-        if (count) count.textContent = parseInt(count.textContent || "0") + 1;
-      }
-    } catch (e) {
-      showToast("Error: " + e.code);
-    }
-  };
-
-  // ── Delete ────────────────────────────────────────────────────
-  window._del = async function (id) {
-    if (!document.body.classList.contains("admin")) return;
-    try { await deleteDoc(doc(db, "secrets", id)); }
-    catch (e) { showToast("Delete failed: " + e.code); }
-  };
-
-  // ── Admin: tap footer 5x ──────────────────────────────────────
-  let taps = 0, tapTimer;
-  document.getElementById("footer").addEventListener("click", () => {
-    taps++; clearTimeout(tapTimer);
-    tapTimer = setTimeout(() => taps = 0, 800);
-    if (taps >= 5) {
-      taps = 0;
-      const p = prompt("Admin password:");
-      if (p === ADMIN_PASS) { document.body.classList.add("admin"); showToast("Admin mode on 🔐"); }
-    }
-  });
-
-  // ── Ctrl/Cmd+Enter to post ────────────────────────────────────
-  document.getElementById("txt").addEventListener("keydown", e => {
-    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") window.postSecret();
-  });
-
-  // ── Helpers ───────────────────────────────────────────────────
-  function esc(s) {
-    return String(s || "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-  }
-  function timeAgo(ts) {
-    const d = Date.now() - ts;
-    if (d < 60000)    return "just now";
-    if (d < 3600000)  return Math.floor(d/60000) + "m ago";
-    if (d < 86400000) return Math.floor(d/3600000) + "h ago";
-    return new Date(ts).toLocaleDateString("en-MY",{day:"numeric",month:"short",year:"numeric"});
-  }
-  let toastT;
-  function showToast(msg) {
-    const t = document.getElementById("toast");
-    t.textContent = msg; t.classList.add("show");
-    clearTimeout(toastT);
-    toastT = setTimeout(() => t.classList.remove("show"), 2800);
-  }
-</script>
-</body>
-</html>    .header h1 span { color: #a78bfa; }
-    .header p { margin-top: 6px; color: #444; font-size: 0.82rem; }
-
-    .center-box {
-      grid-column: 2;
-      grid-row: 2;
-      padding: 10px 16px 20px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .post-label {
-      font-size: 0.72rem;
-      color: #555;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 10px;
-    }
-
-    textarea {
-      width: 100%;
-      height: 110px;
-      background: #1a1a1a;
-      border: 1px solid #2a2a2a;
-      border-radius: 12px;
-      padding: 14px;
-      color: #e8e8e8;
-      font-family: 'Inter', sans-serif;
-      font-size: 0.9rem;
-      resize: none;
-      outline: none;
-      transition: border-color 0.2s;
-    }
-    textarea:focus { border-color: #7c3aed; }
-    textarea::placeholder { color: #383838; }
-
-    button.post {
-      width: 100%;
-      margin-top: 8px;
-      padding: 11px;
-      background: #7c3aed;
-      color: #fff;
-      border: none;
-      border-radius: 10px;
-      font-size: 0.88rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: background 0.18s;
-    }
-    button.post:hover { background: #6d28d9; }
-    button.post:disabled { background: #3b2070; cursor: not-allowed; }
-
-    .col-left {
-      grid-column: 1;
-      grid-row: 2 / 4;
-      padding: 10px 12px 40px 20px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      border-right: 1px solid #1a1a1a;
-    }
-    .col-right {
-      grid-column: 3;
-      grid-row: 2 / 4;
-      padding: 10px 20px 40px 12px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      border-left: 1px solid #1a1a1a;
-    }
-
-    .col-bottom {
-      grid-column: 2;
-      grid-row: 3;
-      padding: 0 16px 40px;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    /* ── CARD ── */
-    .card {
-      background: #141414;
-      border: 1px solid #1e1e1e;
-      border-radius: 11px;
-      padding: 14px 16px 10px;
-      transition: border-color 0.2s;
-      position: relative;
-    }
-    .card:hover { border-color: #2a2a2a; }
-    .card > p.secret-text {
-      font-size: 0.85rem;
-      line-height: 1.65;
-      color: #ccc;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-    .col-bottom .card > p.secret-text { font-size: 0.9rem; }
-
-    .card .meta {
-      margin-top: 8px;
-      font-size: 0.68rem;
-      color: #303030;
-    }
-
-    /* ── CARD ACTIONS ── */
-    .card-actions {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin-top: 10px;
-      border-top: 1px solid #1e1e1e;
-      padding-top: 8px;
-    }
-
-    .btn-like {
-      background: none;
-      border: 1px solid #252525;
-      border-radius: 8px;
-      color: #555;
-      font-size: 0.75rem;
-      padding: 4px 10px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      transition: all 0.18s;
-    }
-    .btn-like:hover { border-color: #a78bfa; color: #a78bfa; }
-    .btn-like.liked { border-color: #7c3aed; color: #a78bfa; background: #1e1530; }
-    .btn-like .thumb { font-size: 0.85rem; }
-
-    .btn-reply {
-      background: none;
-      border: none;
-      color: #383838;
-      font-size: 0.72rem;
-      cursor: pointer;
-      padding: 4px 6px;
-      border-radius: 6px;
-      transition: color 0.15s;
-    }
-    .btn-reply:hover { color: #7c3aed; }
-
-    /* ── REPLIES ── */
-    .replies-section { margin-top: 8px; }
-
-    .reply-input-wrap {
-      display: none;
-      gap: 6px;
-      margin-top: 8px;
-      margin-bottom: 6px;
-    }
-    .reply-input-wrap.open { display: flex; }
-
-    .reply-input-wrap textarea {
-      height: 52px;
-      font-size: 0.78rem;
-      padding: 8px 10px;
-      border-radius: 8px;
-      flex: 1;
-    }
-
-    .btn-send-reply {
-      background: #7c3aed;
-      border: none;
-      color: #fff;
-      border-radius: 8px;
-      padding: 0 12px;
-      font-size: 0.75rem;
-      cursor: pointer;
-      white-space: nowrap;
-      align-self: flex-end;
-      height: 36px;
-      transition: background 0.15s;
-    }
-    .btn-send-reply:hover { background: #6d28d9; }
-    .btn-send-reply:disabled { background: #3b2070; cursor: not-allowed; }
-
-    .replies-list { display: flex; flex-direction: column; gap: 6px; }
-
-    .reply-item {
-      background: #0f0f0f;
-      border-left: 2px solid #2a2a2a;
-      border-radius: 0 7px 7px 0;
-      padding: 8px 10px;
-      font-size: 0.78rem;
-      color: #999;
-      line-height: 1.55;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-    .reply-item .reply-meta {
-      font-size: 0.65rem;
-      color: #2a2a2a;
-      margin-top: 4px;
-    }
-
-    /* ── ADMIN ── */
-    .del { display: none; }
-    body.admin .del {
-      display: block;
-      position: absolute;
-      top: 8px; right: 10px;
-      background: none;
-      border: none;
-      color: #ef4444;
-      font-size: 0.7rem;
-      cursor: pointer;
-      opacity: 0.5;
-    }
-    body.admin .del:hover { opacity: 1; }
-
-    /* ── TOAST ── */
-    .toast {
-      position: fixed;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%) translateY(60px);
-      background: #1e1e1e;
-      border: 1px solid #2a2a2a;
-      color: #a78bfa;
-      padding: 10px 22px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      transition: transform 0.3s;
-      white-space: nowrap;
-      z-index: 99;
-    }
-    .toast.show { transform: translateX(-50%) translateY(0); }
-
-    /* ── NOTICE BAR ── */
-    .notice-bar {
-      grid-column: 1 / 4;
-      text-align: center;
-      padding: 14px 20px;
-      background: #100e1a;
-      border-top: 1px solid #1e1e1e;
-      font-size: 0.76rem;
-      color: #444;
-      line-height: 1.7;
-    }
-    .notice-bar strong { color: #7c3aed; }
-
-    /* ── FOOTER ── */
-    footer {
-      grid-column: 1 / 4;
-      text-align: center;
-      padding: 16px 20px;
-      color: #1e1e1e;
-      font-size: 0.72rem;
-      border-top: 1px solid #141414;
-      user-select: none;
-      cursor: default;
-    }
-
-    /* ── MOBILE ── */
-    @media (max-width: 860px) {
-      .page { display: flex; flex-direction: column; }
-      .col-left, .col-right, .col-bottom { border: none; padding: 0 16px; }
-      .center-box { padding: 10px 16px 20px; }
-      .header { padding: 36px 16px 16px; }
-      footer, .notice-bar { grid-column: unset; }
-    }
-  </style>
-</head>
-<body>
-
-<div class="toast" id="toast"></div>
-
-<div class="page" id="page">
-
-  <div class="header">
-    <h1>MMU <span>Secrets</span></h1>
-    <p>Anonymous. No login. No judgment.</p>
-  </div>
-
-  <div class="center-box">
-    <div class="post-label">post your confession here</div>
-    <textarea id="txt" placeholder="What's your secret…"></textarea>
-    <button class="post" id="postBtn" onclick="postSecret()">Post Anonymously</button>
-  </div>
-
-  <div class="col-left"  id="colLeft"></div>
-  <div class="col-right" id="colRight"></div>
-  <div class="col-bottom" id="colBottom"></div>
-
-  <div class="notice-bar">
-    😔 Feel offended by any post? Reply to it and include <strong>#takedown</strong> — the admin will review and delete it manually.
-  </div>
-
-  <footer id="footer">MMU Secrets · anonymous forever</footer>
-
-</div>
-
-<script type="module">
-  import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import {
-    getFirestore, collection, addDoc, onSnapshot,
-    query, orderBy, deleteDoc, doc, serverTimestamp,
-    updateDoc, increment
-  } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-  const firebaseConfig = {
-    apiKey:            "AIzaSyDlegLoSoqjwxm7UBg9u2LG93NYW1GqEog",
-    authDomain:        "haswinmmuhenry.firebaseapp.com",
-    projectId:         "haswinmmuhenry",
-    storageBucket:     "haswinmmuhenry.firebasestorage.app",
-    messagingSenderId: "719747850913",
-    appId:             "1:719747850913:web:e8ed8f0ada88095b1786e0"
-  };
-
-  const ADMIN_PASS = "mmusecrets2024";
-
-  const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
-
-  // Track liked posts per browser
-  const getLiked = () => JSON.parse(localStorage.getItem("mmu_liked") || "[]");
-  const setLiked = arr => localStorage.setItem("mmu_liked", JSON.stringify(arr));
-
-  // ── Live feed — ordered by time desc (latest first) ───────────
-  const q = query(collection(db, "secrets"), orderBy("ts", "desc"));
-
-  onSnapshot(q, snap => {
-    const left   = document.getElementById("colLeft");
-    const right  = document.getElementById("colRight");
-    const bottom = document.getElementById("colBottom");
-    left.innerHTML = right.innerHTML = bottom.innerHTML = "";
-
-    if (snap.empty) {
-      bottom.innerHTML = "<div style='text-align:center;color:#333;font-size:0.85rem;padding:40px 0'>No secrets yet. Be the first.</div>";
-      return;
-    }
-
-    snap.docs.forEach((d, i) => {
-      const p    = d.data();
-      const ms   = p.ts?.toMillis?.() ?? Date.now();
-      const liked = getLiked().includes(d.id);
-      const likes = p.likes || 0;
-
-      const card = document.createElement("div");
-      card.className = "card";
-      card.id = "card-" + d.id;
-      card.innerHTML = `
-        <button class="del" onclick="window._del('${d.id}')">✕</button>
-        <p class="secret-text">${esc(p.text)}</p>
-        <div class="meta">${timeAgo(ms)}</div>
-        <div class="card-actions">
-          <button class="btn-like${liked ? ' liked' : ''}" id="like-${d.id}" onclick="window._like('${d.id}')">
-            <span class="thumb">👍</span><span class="like-count">${likes}</span>
-          </button>
-          <button class="btn-reply" onclick="window._toggleReply('${d.id}')">💬 Reply</button>
-        </div>
-        <div class="replies-section" id="replies-${d.id}">
-          <div class="reply-input-wrap" id="reply-input-${d.id}">
-            <textarea placeholder="Reply anonymously… " id="reply-txt-${d.id}"></textarea>
-            <button class="btn-send-reply" id="reply-btn-${d.id}" onclick="window._sendReply('${d.id}')">Send</button>
-          </div>
-          <div class="replies-list" id="replies-list-${d.id}"></div>
-        </div>
-      `;
-
-      const slot = i % 3;
-      if (slot === 0) left.appendChild(card);
-      if (slot === 1) right.appendChild(card);
-      if (slot === 2) bottom.appendChild(card);
-
-      loadReplies(d.id);
-    });
-  }, err => {
-    document.getElementById("colBottom").innerHTML =
-      `<div style='color:#ef4444;text-align:center;padding:20px;font-size:0.85rem'>Error: ${err.code}<br><small>${err.message}</small></div>`;
-  });
-
-  // ── Load replies live ─────────────────────────────────────────
-  function loadReplies(postId) {
-    const rq = query(collection(db, "secrets", postId, "replies"), orderBy("ts", "asc"));
-    onSnapshot(rq, snap => {
-      const list = document.getElementById("replies-list-" + postId);
-      if (!list) return;
-      list.innerHTML = "";
-      snap.docs.forEach(rd => {
-        const r  = rd.data();
-        const ms = r.ts?.toMillis?.() ?? Date.now();
-        const item = document.createElement("div");
-        item.className = "reply-item";
-        item.innerHTML = `${esc(r.text)}<div class="reply-meta">${timeAgo(ms)}</div>`;
-        list.appendChild(item);
-      });
-    });
-  }
-
-  // ── Post ──────────────────────────────────────────────────────
-  window.postSecret = async function () {
-    const txt = document.getElementById("txt").value.trim();
-    if (!txt) return;
-    const btn = document.getElementById("postBtn");
-    btn.disabled = true; btn.textContent = "Posting…";
-    try {
-      await addDoc(collection(db, "secrets"), { text: txt, ts: serverTimestamp(), likes: 0 });
-      document.getElementById("txt").value = "";
-      showToast("Posted ✓");
-    } catch (e) {
-      showToast("Error: " + e.code);
-    }
-    btn.disabled = false; btn.textContent = "Post Anonymously";
-  };
-
-  // ── Toggle reply input ────────────────────────────────────────
-  window._toggleReply = function (postId) {
-    const wrap = document.getElementById("reply-input-" + postId);
-    if (!wrap) return;
-    wrap.classList.toggle("open");
-    if (wrap.classList.contains("open")) {
-      document.getElementById("reply-txt-" + postId)?.focus();
-    }
-  };
-
-  // ── Send reply ────────────────────────────────────────────────
-  window._sendReply = async function (postId) {
-    const txtEl = document.getElementById("reply-txt-" + postId);
-    const btn   = document.getElementById("reply-btn-" + postId);
-    if (!txtEl) return;
-    const txt = txtEl.value.trim();
-    if (!txt) return;
-    btn.disabled = true; btn.textContent = "Sending…";
-    try {
-      await addDoc(collection(db, "secrets", postId, "replies"), {
-        text: txt,
-        ts: serverTimestamp()
-      });
-      txtEl.value = "";
-      document.getElementById("reply-input-" + postId)?.classList.remove("open");
-      const isTakedown = txt.toLowerCase().includes("#takedown");
-      showToast(isTakedown ? "Report submitted. Admin will review 🔍" : "Reply posted ✓");
-    } catch (e) {
-      showToast("Error: " + e.code);
-    }
-    btn.disabled = false; btn.textContent = "Send";
-  };
-
-  // ── Like (thumbs up) ─────────────────────────────────────────
-  window._like = async function (postId) {
-    const liked = getLiked();
-    if (liked.includes(postId)) return;
-    try {
-      await updateDoc(doc(db, "secrets", postId), { likes: increment(1) });
-      setLiked([...liked, postId]);
-      const btn = document.getElementById("like-" + postId);
-      if (btn) {
-        btn.classList.add("liked");
-        const count = btn.querySelector(".like-count");
-        if (count) count.textContent = parseInt(count.textContent || "0") + 1;
-      }
-    } catch (e) {
-      showToast("Error: " + e.code);
-    }
-  };
-
-  // ── Delete ────────────────────────────────────────────────────
-  window._del = async function (id) {
-    if (!document.body.classList.contains("admin")) return;
-    try { await deleteDoc(doc(db, "secrets", id)); }
-    catch (e) { showToast("Delete failed: " + e.code); }
-  };
-
-  // ── Admin: tap footer 5x quickly ─────────────────────────────
-  let taps = 0, tapTimer;
-  document.getElementById("footer").addEventListener("click", () => {
-    taps++; clearTimeout(tapTimer);
-    tapTimer = setTimeout(() => taps = 0, 800);
-    if (taps >= 5) {
-      taps = 0;
-      const p = prompt("Admin password:");
-      if (p === ADMIN_PASS) { document.body.classList.add("admin"); showToast("Admin mode on 🔐"); }
-    }
-  });
-
-  // ── Ctrl/Cmd+Enter to post ────────────────────────────────────
-  document.getElementById("txt").addEventListener("keydown", e => {
-    if ((e.ctrlKey || e.metaKey) && e.key === "Enter") window.postSecret();
-  });
-
-  // ── Helpers ───────────────────────────────────────────────────
-  function esc(s) {
-    return String(s || "")
-      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   }
   function timeAgo(ts) {
     const d = Date.now() - ts;
