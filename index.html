@@ -40,14 +40,24 @@
     button.post { width: 100%; margin-top: 8px; padding: 11px; background: #7c3aed; color: #fff; border: none; border-radius: 10px; font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: background 0.18s; }
     button.post:hover { background: #6d28d9; }
     button.post:disabled { background: #3b2070; cursor: not-allowed; }
+
     .content-grid { display: grid; grid-template-columns: 1fr 420px 1fr; width: 100%; max-width: 1400px; margin: 0 auto; }
     .col-left { padding: 10px 12px 40px 20px; display: flex; flex-direction: column; gap: 12px; border-right: 1px solid #1a1a1a; }
     .col-bottom { padding: 10px 16px 40px; display: flex; flex-direction: column; gap: 12px; }
     .col-right { padding: 10px 20px 40px 12px; display: flex; flex-direction: column; gap: 12px; border-left: 1px solid #1a1a1a; }
+
+    .col-left-section-label {
+      font-size: 0.6rem; color: #2e2e2e; text-transform: uppercase;
+      letter-spacing: 0.1em; padding: 4px 0 2px;
+      border-bottom: 1px solid #1a1a1a; margin-bottom: 2px; margin-top: 6px;
+    }
+    .col-left-section-label:first-child { margin-top: 0; }
+
     .skeleton { background: #141414; border: 1px solid #1e1e1e; border-radius: 11px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
     .skel-line { height: 10px; border-radius: 5px; background: linear-gradient(90deg, #1e1e1e 25%, #252525 50%, #1e1e1e 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; }
     .skel-line.short { width: 40%; } .skel-line.med { width: 70%; } .skel-line.long { width: 90%; } .skel-line.xshort { width: 25%; height: 8px; margin-top: 4px; }
     @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
     .card { background: #141414; border: 1px solid #1e1e1e; border-radius: 11px; padding: 14px 16px 10px; transition: border-color 0.2s; position: relative; }
     .card:hover { border-color: #2a2a2a; }
     .card > p.secret-text { font-size: 0.85rem; line-height: 1.65; color: #ccc; white-space: pre-wrap; word-break: break-word; }
@@ -59,9 +69,45 @@
     .btn-like.liked { color: #7c3aed; font-weight: 500; }
     .card.own-post { border-color: #231942; }
 
-    .card.top-liked { border-color: #7c3aed; background: #100e1a; margin-top: 10px; }
-    .card.top-liked::before { content: '🔥 Most Liked'; position: absolute; top: -10px; left: 14px; font-size: 0.62rem; color: #a78bfa; background: #1a1530; border: 1px solid #7c3aed; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.06em; font-weight: 500; }
+    /* Most Liked */
+    .card.top-liked { border-color: #7c3aed; background: #100e1a; padding-top: 22px; }
+    .card.top-liked::before {
+      content: '🔥 Most Liked'; position: absolute; top: -10px; left: 14px;
+      font-size: 0.62rem; color: #a78bfa; background: #1a1530;
+      border: 1px solid #7c3aed; padding: 2px 8px; border-radius: 20px;
+      letter-spacing: 0.06em; font-weight: 500;
+    }
     .card.top-liked > p.secret-text { color: #e8e8e8; }
+
+    /* Most Replied */
+    .card.top-replied { border-color: #0ea5e9; background: #0a1420; padding-top: 22px; }
+    .card.top-replied::before {
+      content: '💬 Most Replied'; position: absolute; top: -10px; left: 14px;
+      font-size: 0.62rem; color: #7dd3fc; background: #0c1a28;
+      border: 1px solid #0ea5e9; padding: 2px 8px; border-radius: 20px;
+      letter-spacing: 0.06em; font-weight: 500;
+    }
+    .card.top-replied > p.secret-text { color: #e8e8e8; }
+
+    /* Admin Pinned */
+    .card.admin-pinned { border-color: #f59e0b; background: #161009; padding-top: 22px; }
+    .card.admin-pinned::before {
+      content: '📌 Pinned'; position: absolute; top: -10px; left: 14px;
+      font-size: 0.62rem; color: #fcd34d; background: #1c1408;
+      border: 1px solid #f59e0b; padding: 2px 8px; border-radius: 20px;
+      letter-spacing: 0.06em; font-weight: 500;
+    }
+    .card.admin-pinned > p.secret-text { color: #e8e8e8; }
+
+    /* Pin button — only in admin mode */
+    .btn-pin { display: none; }
+    body.admin .btn-pin {
+      display: inline-flex; background: none; border: none; color: #666;
+      font-size: 0.72rem; cursor: pointer; padding: 4px 0;
+      letter-spacing: 0.02em; align-items: center; gap: 4px; transition: color 0.15s;
+    }
+    body.admin .btn-pin:hover { color: #f59e0b; }
+    body.admin .btn-pin.pinned { color: #f59e0b; font-weight: 500; }
 
     .card.search-highlight mark { background: #7c3aed33; color: #c4b5fd; border-radius: 2px; padding: 0 1px; }
 
@@ -75,15 +121,24 @@
     .replies-list { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
     .reply-item { background: #222; border-left: 2px solid #7c3aed; border-radius: 0 7px 7px 0; padding: 8px 10px; font-size: 0.78rem; color: #ddd; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
     .reply-item .reply-meta { font-size: 0.65rem; color: #666; margin-top: 4px; }
+
     .del { display: none; }
     body.admin .del { display: block; position: absolute; top: 8px; right: 10px; background: none; border: none; color: #ef4444; font-size: 0.7rem; cursor: pointer; opacity: 0.5; }
     body.admin .del:hover { opacity: 1; }
+
     .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(60px); background: #1e1e1e; border: 1px solid #2a2a2a; color: #a78bfa; padding: 10px 22px; border-radius: 8px; font-size: 0.85rem; transition: transform 0.3s; white-space: nowrap; z-index: 99; }
     .toast.show { transform: translateX(-50%) translateY(0); }
     .notice-bar { width: 100%; text-align: center; padding: 14px 20px; background: #100e1a; border-top: 1px solid #1e1e1e; font-size: 0.76rem; color: #444; line-height: 1.7; margin-top: auto; }
     .notice-bar strong { color: #7c3aed; }
     footer { width: 100%; text-align: center; padding: 16px 20px; color: #1e1e1e; font-size: 0.72rem; border-top: 1px solid #141414; user-select: none; cursor: default; }
-    @media (max-width: 860px) { .content-grid { display: flex; flex-direction: column; } .col-left, .col-right, .col-bottom { border: none; padding: 0 16px 20px; } .center-box { padding: 10px 16px 20px; } .header { padding: 36px 16px 16px; } .live-counter { position: absolute; top: 52px; right: 16px; } }
+
+    @media (max-width: 860px) {
+      .content-grid { display: flex; flex-direction: column; }
+      .col-left, .col-right, .col-bottom { border: none; padding: 0 16px 20px; }
+      .center-box { padding: 10px 16px 20px; }
+      .header { padding: 36px 16px 16px; }
+      .live-counter { position: absolute; top: 52px; right: 16px; }
+    }
   </style>
 </head>
 <body>
@@ -119,11 +174,13 @@
     <textarea id="txt" placeholder="What's your secret…"></textarea>
     <button class="post" id="postBtn">Post Anonymously</button>
   </div>
+
   <div class="content-grid">
     <div class="col-left"  id="colLeft"></div>
     <div class="col-bottom" id="colBottom"></div>
     <div class="col-right" id="colRight"></div>
   </div>
+
   <div class="notice-bar">
     😔 Feel offended by any post? Reply to it and include <strong>#takedown</strong> — the admin will review and delete it manually.
   </div>
@@ -135,7 +192,7 @@
   var _x = atob;
   window.__cfg = {
     k: _x("QUl6YVN5QlV5VWVGckJrVVZGUmhvQlpwNmJTeXlYOE50TzhfY1Vn"),
-    d: _x("bW11c2VjcmV0LWZmNWVmLmZpcmViYXNlYXBwLmNvbQ=="),
+    d: _x("bW11c2VjcmV0LWZmNWVmLmZpcmViYXNlc2FwcC5jb20="),
     p: _x("bW11c2VjcmV0LWZmNWVm"),
     s: _x("bW11c2VjcmV0LWZmNWVmLmZpcmViYXNlc3RvcmFnZS5hcHA="),
     m: _x("NTI1NTQ3MzcyNzI1"),
@@ -185,6 +242,10 @@
   const setLiked    = arr => localStorage.setItem("mmu_liked", JSON.stringify(arr));
   const getOwnPosts = () => JSON.parse(sessionStorage.getItem("mmu_own") || "[]");
   const addOwnPost  = id => sessionStorage.setItem("mmu_own", JSON.stringify([...getOwnPosts(), id]));
+  const getPinned   = () => JSON.parse(localStorage.getItem("mmu_pinned") || "[]");
+  const setPinned   = arr => localStorage.setItem("mmu_pinned", JSON.stringify(arr));
+
+  let replyCounts = {};
 
   function showSkeletons() {
     const skelly = () => `<div class="skeleton"><div class="skel-line long"></div><div class="skel-line med"></div><div class="skel-line short"></div><div class="skel-line xshort"></div></div>`;
@@ -222,102 +283,182 @@
       return;
     }
 
-    const term = searchTerm.toLowerCase();
-    const ownPosts = getOwnPosts();
-    const maxLikes = Math.max(...allDocs.map(d => d.data().likes || 0));
+    const term      = searchTerm.toLowerCase();
+    const ownPosts  = getOwnPosts();
+    const pinnedIds = getPinned();
+    const maxLikes  = Math.max(...allDocs.map(d => d.data().likes || 0));
+    const maxReplies = Math.max(...Object.values(replyCounts).concat([0]));
 
-    let visibleCount = 0;
-    let slot = 0;
+    const topLikedId   = maxLikes > 0
+      ? allDocs.find(d => (d.data().likes || 0) === maxLikes)?.id
+      : null;
+    const topRepliedId = maxReplies > 0
+      ? Object.entries(replyCounts).sort((a, b) => b[1] - a[1])[0]?.[0]
+      : null;
 
-    allDocs.forEach((d) => {
-      const p     = d.data();
-      const ms    = p.ts?.toMillis?.() ?? Date.now();
-      const liked = getLiked().includes(d.id);
-      const likes = p.likes || 0;
-      const isOwn = ownPosts.includes(d.id);
-      const isTop = likes === maxLikes && likes > 0;
-      const text  = p.text || "";
-      const matches = !term || text.toLowerCase().includes(term);
+    const leftSpecialIds = new Set();
+    pinnedIds.forEach(id => leftSpecialIds.add(id));
+    if (topLikedId)   leftSpecialIds.add(topLikedId);
+    if (topRepliedId) leftSpecialIds.add(topRepliedId);
 
-      if (!matches) return;
-      visibleCount++;
+    const addLabel = (parent, txt) => {
+      const el = document.createElement("div");
+      el.className = "col-left-section-label";
+      el.textContent = txt;
+      parent.appendChild(el);
+    };
 
-      const highlightedText = term
-        ? esc(text).replace(new RegExp(escReg(esc(term)), "gi"), m => `<mark>${m}</mark>`)
-        : esc(text);
+    // ── LEFT: special cards first ──
+    let addedPinLabel = false;
+    pinnedIds.forEach(pid => {
+      const d = allDocs.find(x => x.id === pid);
+      if (!d) return;
+      startReplies(d.id);
+      const text = d.data().text || "";
+      if (term && !text.toLowerCase().includes(term)) return;
+      if (!addedPinLabel) { addLabel(left, "📌 Admin Pinned"); addedPinLabel = true; }
+      left.appendChild(buildCard(d, "admin-pinned", term, ownPosts));
+    });
 
-      const card = document.createElement("div");
-      card.className = "card" + (isOwn ? " own-post" : "") + (isTop ? " top-liked" : "") + (term ? " search-highlight" : "");
-      card.id = "card-" + d.id;
-      card.innerHTML = `
-        <button class="del">✕</button>
-        <p class="secret-text">${highlightedText}</p>
-        <div class="meta">${timeAgo(ms)}</div>
-        <div class="card-actions">
-          <button class="btn-like${liked ? ' liked' : ''}" id="like-${d.id}">Like (${likes})</button>
-          <button class="btn-reply">Reply</button>
-          <button class="btn-share">Share</button>
-        </div>
-        <div class="replies-section" id="replies-${d.id}">
-          <div class="reply-input-wrap" id="reply-input-${d.id}">
-            <textarea placeholder="Reply anonymously… (write #takedown to report)" id="reply-txt-${d.id}"></textarea>
-            <button class="btn-send-reply" id="reply-btn-${d.id}">Send</button>
-          </div>
-          <div class="replies-list" id="replies-list-${d.id}"></div>
-        </div>`;
-
-      card.querySelector('.del').addEventListener('click', () => delSecret(d.id));
-      card.querySelector('.btn-like').addEventListener('click', () => likeSecret(d.id));
-      card.querySelector('.btn-reply').addEventListener('click', () => toggleReply(d.id));
-      card.querySelector('.btn-share').addEventListener('click', () => shareSecret(d.id, text));
-
-      if (isTop) {
-        left.insertBefore(card, left.firstChild);
-      } else {
-        if (slot % 3 === 0) left.appendChild(card);
-        if (slot % 3 === 1) right.appendChild(card);
-        if (slot % 3 === 2) bottom.appendChild(card);
-        slot++;
+    if (topLikedId && !pinnedIds.includes(topLikedId)) {
+      const d = allDocs.find(x => x.id === topLikedId);
+      if (d) {
+        startReplies(d.id);
+        const text = d.data().text || "";
+        if (!term || text.toLowerCase().includes(term)) {
+          addLabel(left, "🔥 Most Liked");
+          left.appendChild(buildCard(d, "top-liked", term, ownPosts));
+        }
       }
+    }
 
-      loadReplies(d.id);
+    if (topRepliedId && !pinnedIds.includes(topRepliedId) && topRepliedId !== topLikedId) {
+      const d = allDocs.find(x => x.id === topRepliedId);
+      if (d) {
+        startReplies(d.id);
+        const text = d.data().text || "";
+        if (!term || text.toLowerCase().includes(term)) {
+          addLabel(left, "💬 Most Replied");
+          left.appendChild(buildCard(d, "top-replied", term, ownPosts));
+        }
+      }
+    }
+
+    // ── ALL other posts go into left / bottom / right ──
+    let slot = 0;
+    allDocs.forEach(d => {
+      startReplies(d.id);
+      const text = d.data().text || "";
+      if (term && !text.toLowerCase().includes(term)) return;
+
+      if (leftSpecialIds.has(d.id)) return;
+
+      const card = buildCard(d, null, term, ownPosts);
+
+      if (slot % 3 === 0)      left.appendChild(card);
+      else if (slot % 3 === 1) bottom.appendChild(card);
+      else                     right.appendChild(card);
+      slot++;
     });
 
     const bar = document.getElementById("searchResultsBar");
     if (term) {
-      bar.textContent = visibleCount === 0
+      const vis = allDocs.filter(d => (d.data().text || "").toLowerCase().includes(term)).length;
+      bar.textContent = vis === 0
         ? "no results found"
-        : `${visibleCount} result${visibleCount !== 1 ? "s" : ""} for "${searchTerm}"`;
+        : `${vis} result${vis !== 1 ? "s" : ""} for "${searchTerm}"`;
     } else {
       bar.textContent = "";
     }
   }
 
-  function shareSecret(postId, text) {
-    const shareText = `"${text.slice(0, 100)}${text.length > 100 ? '…' : ''}" — MMU Secrets`;
-    if (navigator.share) {
-      navigator.share({ title: "MMU Secrets", text: shareText, url: window.location.href }).catch(() => {});
-    } else {
-      navigator.clipboard.writeText(shareText + "\n" + window.location.href).then(() => {
-        showToast("Copied to clipboard ✓");
-      }).catch(() => showToast("Couldn't copy"));
-    }
+  function buildCard(d, specialClass, term, ownPosts) {
+    const p      = d.data();
+    const ms     = p.ts?.toMillis?.() ?? Date.now();
+    const liked  = getLiked().includes(d.id);
+    const likes  = p.likes || 0;
+    const isOwn  = ownPosts.includes(d.id);
+    const text   = p.text || "";
+    const isPinned = getPinned().includes(d.id);
+    const replyCount = replyCounts[d.id] || 0;
+
+    let cls = "card";
+    if (isOwn)        cls += " own-post";
+    if (specialClass) cls += " " + specialClass;
+    if (term)         cls += " search-highlight";
+
+    const highlightedText = term
+      ? esc(text).replace(new RegExp(escReg(esc(term)), "gi"), m => `<mark>${m}</mark>`)
+      : esc(text);
+
+    const card = document.createElement("div");
+    card.className = cls;
+    card.id = "card-" + d.id;
+    card.innerHTML = `
+      <button class="del">✕</button>
+      <p class="secret-text">${highlightedText}</p>
+      <div class="meta">${timeAgo(ms)}</div>
+      <div class="card-actions">
+        <button class="btn-like${liked ? ' liked' : ''}" id="like-${d.id}">Like (${likes})</button>
+        <button class="btn-reply" id="replyBtn-${d.id}">Reply${replyCount > 0 ? ` (${replyCount})` : ''}</button>
+        <button class="btn-share">Share</button>
+        <button class="btn-pin${isPinned ? ' pinned' : ''}" id="pin-${d.id}">${isPinned ? '📌 Unpin' : '📌 Pin'}</button>
+      </div>
+      <div class="replies-section" id="replies-${d.id}">
+        <div class="reply-input-wrap" id="reply-input-${d.id}">
+          <textarea placeholder="Reply anonymously… (write #takedown to report)" id="reply-txt-${d.id}"></textarea>
+          <button class="btn-send-reply" id="reply-btn-${d.id}">Send</button>
+        </div>
+        <div class="replies-list" id="replies-list-${d.id}"></div>
+      </div>`;
+
+    card.querySelector('.del').addEventListener('click', () => delSecret(d.id));
+    card.querySelector('.btn-like').addEventListener('click', () => likeSecret(d.id));
+    card.querySelector(`#replyBtn-${d.id}`).addEventListener('click', () => toggleReply(d.id));
+    card.querySelector('.btn-share').addEventListener('click', () => shareSecret(d.id, text));
+    card.querySelector(`#pin-${d.id}`).addEventListener('click', () => togglePin(d.id));
+    card.querySelector(`#reply-btn-${d.id}`).addEventListener('click', () => sendReply(d.id));
+
+    return card;
   }
 
-  function loadReplies(postId) {
+  function startReplies(postId) {
+    if (window.__activeReplyListeners?.has(postId)) {
+      const list = document.getElementById("replies-list-" + postId);
+      if (list && list.children.length === 0 && replyCounts[postId] > 0) {
+        // Fallback if layout structural redraw dropped elements from view
+        window.__activeReplyListeners.delete(postId);
+      } else {
+        return;
+      }
+    }
+    if (!window.__activeReplyListeners) window.__activeReplyListeners = new Set();
+    window.__activeReplyListeners.add(postId);
+
     const rq = query(collection(db, "secrets", postId, "replies"), orderBy("ts", "asc"));
     onSnapshot(rq, snap => {
+      const oldCount = replyCounts[postId] || 0;
+      replyCounts[postId] = snap.size;
+
+      const btn = document.getElementById("replyBtn-" + postId);
+      if (btn) btn.textContent = snap.size > 0 ? `Reply (${snap.size})` : "Reply";
+
       const list = document.getElementById("replies-list-" + postId);
-      if (!list) return;
-      list.innerHTML = "";
-      snap.docs.forEach(rd => {
-        const r  = rd.data();
-        const ms = r.ts?.toMillis?.() ?? Date.now();
-        const item = document.createElement("div");
-        item.className = "reply-item";
-        item.innerHTML = `${esc(r.text)}<div class="reply-meta">${timeAgo(ms)}</div>`;
-        list.appendChild(item);
-      });
+      if (list) {
+        list.innerHTML = "";
+        snap.docs.forEach(rd => {
+          const r  = rd.data();
+          const ms = r.ts?.toMillis?.() ?? Date.now();
+          const item = document.createElement("div");
+          item.className = "reply-item";
+          item.innerHTML = `${esc(r.text)}<div class="reply-meta">${timeAgo(ms)}</div>`;
+          list.appendChild(item);
+        });
+      }
+
+      if (oldCount !== snap.size) {
+        renderCards(document.getElementById("searchInput").value.trim());
+      }
     });
   }
 
@@ -340,7 +481,12 @@
     const wrap = document.getElementById("reply-input-" + postId);
     if (!wrap) return;
     wrap.classList.toggle("open");
-    if (wrap.classList.contains("open")) document.getElementById("reply-txt-" + postId)?.focus();
+    if (wrap.classList.contains("open")) {
+      document.getElementById("reply-txt-" + postId)?.focus();
+      // Ensure existing replies render when container toggles open
+      window.__activeReplyListeners?.delete(postId);
+      startReplies(postId);
+    }
   }
 
   async function sendReply(postId) {
@@ -376,6 +522,30 @@
     catch (e) { showToast("Delete failed: " + e.code); }
   }
 
+  function togglePin(postId) {
+    if (!document.body.classList.contains("admin")) return;
+    const pinned = getPinned();
+    if (pinned.includes(postId)) {
+      setPinned(pinned.filter(id => id !== postId));
+      showToast("Unpinned.");
+    } else {
+      setPinned([...pinned, postId]);
+      showToast("📌 Pinned.");
+    }
+    renderCards(document.getElementById("searchInput").value.trim());
+  }
+
+  function shareSecret(postId, text) {
+    const shareText = `"${text.slice(0, 100)}${text.length > 100 ? '…' : ''}" — MMU Secrets`;
+    if (navigator.share) {
+      navigator.share({ title: "MMU Secrets", text: shareText, url: window.location.href }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(shareText + "\n" + window.location.href).then(() => {
+        showToast("Copied to clipboard ✓");
+      }).catch(() => showToast("Couldn't copy"));
+    }
+  }
+
   let taps = 0, tapTimer;
   document.getElementById("footer").addEventListener("click", () => {
     taps++; clearTimeout(tapTimer);
@@ -388,6 +558,7 @@
         if (hash === window.__ah) {
           document.body.classList.add("admin");
           showToast("Admin mode on 🔐");
+          renderCards(document.getElementById("searchInput").value.trim());
         } else {
           showToast("Incorrect.");
         }
