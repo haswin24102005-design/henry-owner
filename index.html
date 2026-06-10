@@ -192,7 +192,7 @@
   var _x = atob;
   window.__cfg = {
     k: _x("QUl6YVN5QlV5VWVGckJrVVZGUmhvQlpwNmJTeXlYOE50TzhfY1Vn"),
-    d: _x("bW11c2VjcmV0LWZmNWVmLmZpcmViYXNlYXBwLmNvbQ=="),
+    d: _x("bW11c2VjcmV0LWZmNWVmLmZpcmViYXNlc2FwcC5jb20="),
     p: _x("bW11c2VjcmV0LWZmNWVm"),
     s: _x("bW11c2VjcmV0LWZmNWVmLmZpcmViYXNlc3RvcmFnZS5hcHA="),
     m: _x("NTI1NTQ3MzcyNzI1"),
@@ -245,11 +245,7 @@
   const getPinned   = () => JSON.parse(localStorage.getItem("mmu_pinned") || "[]");
   const setPinned   = arr => localStorage.setItem("mmu_pinned", JSON.stringify(arr));
 
-  // reply data cached here — keyed by postId
-  // replyCounts[id] = number, replyDocs[id] = [{text,ms}], replyUnsubs[id] = unsubscribe fn
   let replyCounts = {};
-  let replyDocs   = {};
-  let replyUnsubs = {};
 
   function showSkeletons() {
     const skelly = () => `<div class="skeleton"><div class="skel-line long"></div><div class="skel-line med"></div><div class="skel-line short"></div><div class="skel-line xshort"></div></div>`;
@@ -293,7 +289,6 @@
     const maxLikes  = Math.max(...allDocs.map(d => d.data().likes || 0));
     const maxReplies = Math.max(...Object.values(replyCounts).concat([0]));
 
-    // Find the single top-liked and top-replied IDs
     const topLikedId   = maxLikes > 0
       ? allDocs.find(d => (d.data().likes || 0) === maxLikes)?.id
       : null;
@@ -301,14 +296,11 @@
       ? Object.entries(replyCounts).sort((a, b) => b[1] - a[1])[0]?.[0]
       : null;
 
-    // Build set of IDs that belong in the left special section
-    // (pinned, top-liked, top-replied) — no duplicates
     const leftSpecialIds = new Set();
     pinnedIds.forEach(id => leftSpecialIds.add(id));
     if (topLikedId)   leftSpecialIds.add(topLikedId);
     if (topRepliedId) leftSpecialIds.add(topRepliedId);
 
-    // Helper to add a section label
     const addLabel = (parent, txt) => {
       const el = document.createElement("div");
       el.className = "col-left-section-label";
@@ -317,69 +309,58 @@
     };
 
     // ── LEFT: special cards first ──
-    // 1. Admin pinned
     let addedPinLabel = false;
     pinnedIds.forEach(pid => {
       const d = allDocs.find(x => x.id === pid);
       if (!d) return;
+      startReplies(d.id);
       const text = d.data().text || "";
       if (term && !text.toLowerCase().includes(term)) return;
       if (!addedPinLabel) { addLabel(left, "📌 Admin Pinned"); addedPinLabel = true; }
       left.appendChild(buildCard(d, "admin-pinned", term, ownPosts));
-      startReplies(d.id);
-      paintReplies(d.id); // show cached replies immediately after DOM insert
     });
 
-    // 2. Most Liked (skip if already pinned)
     if (topLikedId && !pinnedIds.includes(topLikedId)) {
       const d = allDocs.find(x => x.id === topLikedId);
       if (d) {
+        startReplies(d.id);
         const text = d.data().text || "";
         if (!term || text.toLowerCase().includes(term)) {
           addLabel(left, "🔥 Most Liked");
           left.appendChild(buildCard(d, "top-liked", term, ownPosts));
-          startReplies(d.id);
-          paintReplies(d.id);        }
+        }
       }
     }
 
-    // 3. Most Replied (skip if already pinned or same as top-liked)
     if (topRepliedId && !pinnedIds.includes(topRepliedId) && topRepliedId !== topLikedId) {
       const d = allDocs.find(x => x.id === topRepliedId);
       if (d) {
+        startReplies(d.id);
         const text = d.data().text || "";
         if (!term || text.toLowerCase().includes(term)) {
           addLabel(left, "💬 Most Replied");
           left.appendChild(buildCard(d, "top-replied", term, ownPosts));
-          startReplies(d.id);
-          paintReplies(d.id);        }
+        }
       }
     }
 
-    // ── ALL other posts go into left / bottom / right (original 3-column rotation) ──
+    // ── ALL other posts go into left / bottom / right ──
     let slot = 0;
     allDocs.forEach(d => {
+      startReplies(d.id);
       const text = d.data().text || "";
       if (term && !text.toLowerCase().includes(term)) return;
 
-      // Normal cards also go in left column (after special ones), then bottom, then right
-      const card = buildCard(d, null, term, ownPosts);
+      if (leftSpecialIds.has(d.id)) return;
 
-      if (leftSpecialIds.has(d.id)) {
-        // Already rendered above — skip
-        return;
-      }
+      const card = buildCard(d, null, term, ownPosts);
 
       if (slot % 3 === 0)      left.appendChild(card);
       else if (slot % 3 === 1) bottom.appendChild(card);
       else                     right.appendChild(card);
       slot++;
-
-      startReplies(d.id);
-      paintReplies(d.id); // show cached replies immediately after DOM insert
     });
 
-    // Search results count
     const bar = document.getElementById("searchResultsBar");
     if (term) {
       const vis = allDocs.filter(d => (d.data().text || "").toLowerCase().includes(term)).length;
@@ -391,7 +372,6 @@
     }
   }
 
-  // Build a card element. specialClass = "top-liked" | "top-replied" | "admin-pinned" | null
   function buildCard(d, specialClass, term, ownPosts) {
     const p      = d.data();
     const ms     = p.ts?.toMillis?.() ?? Date.now();
@@ -442,34 +422,43 @@
     return card;
   }
 
-  // Subscribe ONCE per post. On each update, cache the data then paint into DOM.
   function startReplies(postId) {
-    if (replyUnsubs[postId]) return; // already subscribed — never double-subscribe
-    const rq = query(collection(db, "secrets", postId, "replies"), orderBy("ts", "asc"));
-    replyUnsubs[postId] = onSnapshot(rq, snap => {
-      replyCounts[postId] = snap.size;
-      replyDocs[postId]   = snap.docs.map(rd => ({
-        text: rd.data().text || "",
-        ms:   rd.data().ts?.toMillis?.() ?? Date.now()
-      }));
-      paintReplies(postId);
-    });
-  }
+    if (window.__activeReplyListeners?.has(postId)) {
+      const list = document.getElementById("replies-list-" + postId);
+      if (list && list.children.length === 0 && replyCounts[postId] > 0) {
+        // Fallback if layout structural redraw dropped elements from view
+        window.__activeReplyListeners.delete(postId);
+      } else {
+        return;
+      }
+    }
+    if (!window.__activeReplyListeners) window.__activeReplyListeners = new Set();
+    window.__activeReplyListeners.add(postId);
 
-  // Re-paint cached replies into whatever DOM card is currently visible
-  function paintReplies(postId) {
-    const count = replyCounts[postId] || 0;
-    const docs  = replyDocs[postId]   || [];
-    const btn  = document.getElementById("replyBtn-" + postId);
-    if (btn) btn.textContent = count > 0 ? `Reply (${count})` : "Reply";
-    const list = document.getElementById("replies-list-" + postId);
-    if (!list) return;
-    list.innerHTML = "";
-    docs.forEach(r => {
-      const item = document.createElement("div");
-      item.className = "reply-item";
-      item.innerHTML = `${esc(r.text)}<div class="reply-meta">${timeAgo(r.ms)}</div>`;
-      list.appendChild(item);
+    const rq = query(collection(db, "secrets", postId, "replies"), orderBy("ts", "asc"));
+    onSnapshot(rq, snap => {
+      const oldCount = replyCounts[postId] || 0;
+      replyCounts[postId] = snap.size;
+
+      const btn = document.getElementById("replyBtn-" + postId);
+      if (btn) btn.textContent = snap.size > 0 ? `Reply (${snap.size})` : "Reply";
+
+      const list = document.getElementById("replies-list-" + postId);
+      if (list) {
+        list.innerHTML = "";
+        snap.docs.forEach(rd => {
+          const r  = rd.data();
+          const ms = r.ts?.toMillis?.() ?? Date.now();
+          const item = document.createElement("div");
+          item.className = "reply-item";
+          item.innerHTML = `${esc(r.text)}<div class="reply-meta">${timeAgo(ms)}</div>`;
+          list.appendChild(item);
+        });
+      }
+
+      if (oldCount !== snap.size) {
+        renderCards(document.getElementById("searchInput").value.trim());
+      }
     });
   }
 
@@ -492,7 +481,12 @@
     const wrap = document.getElementById("reply-input-" + postId);
     if (!wrap) return;
     wrap.classList.toggle("open");
-    if (wrap.classList.contains("open")) document.getElementById("reply-txt-" + postId)?.focus();
+    if (wrap.classList.contains("open")) {
+      document.getElementById("reply-txt-" + postId)?.focus();
+      // Ensure existing replies render when container toggles open
+      window.__activeReplyListeners?.delete(postId);
+      startReplies(postId);
+    }
   }
 
   async function sendReply(postId) {
@@ -564,6 +558,7 @@
         if (hash === window.__ah) {
           document.body.classList.add("admin");
           showToast("Admin mode on 🔐");
+          renderCards(document.getElementById("searchInput").value.trim());
         } else {
           showToast("Incorrect.");
         }
