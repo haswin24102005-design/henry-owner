@@ -448,20 +448,31 @@
   }
 
   // Subscribe ONCE per post. On each update, cache the data then paint into DOM.
+  function dbg(msg) {
+    const el = document.getElementById("dbg");
+    if (!el) return;
+    el.style.display = "block";
+    el.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+    el.scrollTop = el.scrollHeight;
+  }
+
   function startReplies(postId) {
     if (replyUnsubs[postId]) {
-      // Already subscribed — just re-paint cache into the (possibly new) DOM card
       paintReplies(postId);
       return;
     }
+    dbg(`Subscribing to replies for ${postId.slice(0,8)}…`);
     const rq = query(collection(db, "secrets", postId, "replies"), orderBy("ts", "asc"));
     replyUnsubs[postId] = onSnapshot(rq, snap => {
+      dbg(`Got ${snap.size} replies for ${postId.slice(0,8)} | listInDOM=${!!document.getElementById("replies-list-"+postId)}`);
       replyCounts[postId] = snap.size;
       replyDocs[postId]   = snap.docs.map(rd => ({
         text: rd.data().text || "",
         ms:   rd.data().ts?.toMillis?.() ?? Date.now()
       }));
       paintReplies(postId);
+    }, err => {
+      dbg(`ERROR for ${postId.slice(0,8)}: ${err.code} — ${err.message}`);
     });
   }
 
@@ -601,5 +612,7 @@
     toastT = setTimeout(() => t.classList.remove("show"), 2800);
   }
 </script>
+
+<div id="dbg" style="position:fixed;bottom:0;left:0;right:0;max-height:180px;overflow-y:auto;background:#0a0a0a;border-top:1px solid #333;font-size:0.68rem;font-family:monospace;color:#0f0;padding:6px 10px;z-index:9999;display:none"></div>
 </body>
 </html>
