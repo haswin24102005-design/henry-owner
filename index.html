@@ -22,6 +22,16 @@
     .header h1 { font-family: 'Playfair Display', serif; font-size: 2rem; color: #fff; }
     .header h1 span { color: #a78bfa; }
     .header p { margin-top: 6px; color: #444; font-size: 0.82rem; }
+
+    .search-wrap { width: 100%; max-width: 420px; padding: 0 16px 16px; position: relative; }
+    .search-wrap input { width: 100%; background: transparent; border: none; border-bottom: 1px solid #222; padding: 8px 0 8px 22px; color: #555; font-family: 'Inter', sans-serif; font-size: 0.78rem; outline: none; transition: border-color 0.2s, color 0.2s; letter-spacing: 0.02em; }
+    .search-wrap input::placeholder { color: #2e2e2e; }
+    .search-wrap input:focus { border-color: #7c3aed; color: #aaa; }
+    .search-wrap .search-icon { position: absolute; left: 16px; top: 50%; transform: translateY(-60%); color: #2a2a2a; font-size: 0.75rem; pointer-events: none; transition: color 0.2s; }
+    .search-results-bar { width: 100%; max-width: 420px; padding: 0 16px 6px; font-size: 0.7rem; color: #333; min-height: 18px; letter-spacing: 0.03em; }
+
+    .anon-name { font-size: 0.65rem; color: #3a3a3a; margin-bottom: 6px; letter-spacing: 0.04em; }
+
     .center-box { width: 100%; max-width: 420px; padding: 10px 16px 30px; display: flex; flex-direction: column; align-items: center; }
     .post-label { font-size: 0.72rem; color: #555; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 10px; }
     textarea { width: 100%; height: 110px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 14px; color: #e8e8e8; font-family: 'Inter', sans-serif; font-size: 0.9rem; resize: none; outline: none; transition: border-color 0.2s; }
@@ -44,10 +54,17 @@
     .col-bottom .card > p.secret-text { font-size: 0.9rem; }
     .card .meta { margin-top: 8px; font-size: 0.68rem; color: #555; }
     .card-actions { display: flex; align-items: center; gap: 16px; margin-top: 10px; border-top: 1px solid #1e1e1e; padding-top: 8px; }
-    .btn-like, .btn-reply { background: none; border: none; color: #666; font-size: 0.72rem; cursor: pointer; padding: 4px 0; border-radius: 4px; transition: color 0.15s; letter-spacing: 0.02em; display: inline-flex; align-items: center; gap: 4px; }
-    .btn-like:hover, .btn-reply:hover { color: #a78bfa; }
+    .btn-like, .btn-reply, .btn-share { background: none; border: none; color: #666; font-size: 0.72rem; cursor: pointer; padding: 4px 0; border-radius: 4px; transition: color 0.15s; letter-spacing: 0.02em; display: inline-flex; align-items: center; gap: 4px; }
+    .btn-like:hover, .btn-reply:hover, .btn-share:hover { color: #a78bfa; }
     .btn-like.liked { color: #7c3aed; font-weight: 500; }
     .card.own-post { border-color: #231942; }
+
+    .card.top-liked { border-color: #7c3aed; background: #100e1a; margin-top: 10px; }
+    .card.top-liked::before { content: '🔥 Most Liked'; position: absolute; top: -10px; left: 14px; font-size: 0.62rem; color: #a78bfa; background: #1a1530; border: 1px solid #7c3aed; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.06em; font-weight: 500; }
+    .card.top-liked > p.secret-text { color: #e8e8e8; }
+
+    .card.search-highlight mark { background: #7c3aed33; color: #c4b5fd; border-radius: 2px; padding: 0 1px; }
+
     .replies-section { margin-top: 8px; }
     .reply-input-wrap { display: none; gap: 6px; margin-top: 8px; margin-bottom: 6px; }
     .reply-input-wrap.open { display: flex; }
@@ -89,8 +106,16 @@
     <h1>MMU <span>Secrets</span></h1>
     <p>Anonymous. No login. No judgment.</p>
   </div>
+
+  <div class="search-wrap">
+    <input type="text" id="searchInput" placeholder="search your name, find anything…" autocomplete="off" spellcheck="false" />
+    <span class="search-icon">⌕</span>
+  </div>
+  <div class="search-results-bar" id="searchResultsBar"></div>
+
   <div class="center-box">
     <div class="post-label">post your confession here</div>
+    <div class="anon-name" id="anonName"></div>
     <textarea id="txt" placeholder="What's your secret…"></textarea>
     <button class="post" id="postBtn">Post Anonymously</button>
   </div>
@@ -142,6 +167,20 @@
     return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,"0")).join("");
   }
 
+  const ANIMALS = ["Penguin","Otter","Capybara","Axolotl","Quokka","Meerkat","Narwhal","Platypus","Pangolin","Fennec","Tapir","Wombat","Manatee","Binturong","Okapi"];
+  const ADJS    = ["Anonymous","Sleepy","Sneaky","Fluffy","Grumpy","Chaotic","Dreamy","Cosmic","Cryptic","Ghostly","Silent","Fuzzy","Mystic","Spooky","Cheeky"];
+  function getAnonName() {
+    let name = sessionStorage.getItem("mmu_anon");
+    if (!name) {
+      const a = ADJS[Math.floor(Math.random() * ADJS.length)];
+      const b = ANIMALS[Math.floor(Math.random() * ANIMALS.length)];
+      name = a + " " + b;
+      sessionStorage.setItem("mmu_anon", name);
+    }
+    return name;
+  }
+  document.getElementById("anonName").textContent = "posting as " + getAnonName();
+
   const getLiked    = () => JSON.parse(localStorage.getItem("mmu_liked") || "[]");
   const setLiked    = arr => localStorage.setItem("mmu_liked", JSON.stringify(arr));
   const getOwnPosts = () => JSON.parse(sessionStorage.getItem("mmu_own") || "[]");
@@ -155,38 +194,69 @@
   }
   showSkeletons();
 
+  let allDocs = [];
+
   const q = query(collection(db, "secrets"), orderBy("ts", "desc"));
 
   onSnapshot(q, snap => {
     document.getElementById("countVal").textContent = snap.size;
-    const left = document.getElementById("colLeft");
-    const right = document.getElementById("colRight");
+    allDocs = snap.docs;
+    renderCards(document.getElementById("searchInput").value.trim());
+  }, err => {
+    document.getElementById("colBottom").innerHTML =
+      `<div style='color:#ef4444;text-align:center;padding:20px;font-size:0.85rem'>Error: ${err.code}<br><small>${err.message}</small></div>`;
+  });
+
+  document.getElementById("searchInput").addEventListener("input", e => {
+    renderCards(e.target.value.trim());
+  });
+
+  function renderCards(searchTerm) {
+    const left   = document.getElementById("colLeft");
+    const right  = document.getElementById("colRight");
     const bottom = document.getElementById("colBottom");
     left.innerHTML = right.innerHTML = bottom.innerHTML = "";
 
-    if (snap.empty) {
+    if (allDocs.length === 0) {
       bottom.innerHTML = "<div style='text-align:center;color:#333;font-size:0.85rem;padding:40px 0'>No secrets yet. Be the first.</div>";
       return;
     }
 
+    const term = searchTerm.toLowerCase();
     const ownPosts = getOwnPosts();
-    snap.docs.forEach((d, i) => {
+    const maxLikes = Math.max(...allDocs.map(d => d.data().likes || 0));
+
+    let visibleCount = 0;
+    let slot = 0;
+
+    allDocs.forEach((d) => {
       const p     = d.data();
       const ms    = p.ts?.toMillis?.() ?? Date.now();
       const liked = getLiked().includes(d.id);
       const likes = p.likes || 0;
       const isOwn = ownPosts.includes(d.id);
+      const isTop = likes === maxLikes && likes > 0;
+      const text  = p.text || "";
+      const matches = !term || text.toLowerCase().includes(term);
+
+      if (!matches) return;
+      visibleCount++;
+
+      const highlightedText = term
+        ? esc(text).replace(new RegExp(escReg(esc(term)), "gi"), m => `<mark>${m}</mark>`)
+        : esc(text);
 
       const card = document.createElement("div");
-      card.className = "card" + (isOwn ? " own-post" : "");
+      card.className = "card" + (isOwn ? " own-post" : "") + (isTop ? " top-liked" : "") + (term ? " search-highlight" : "");
       card.id = "card-" + d.id;
       card.innerHTML = `
         <button class="del">✕</button>
-        <p class="secret-text">${esc(p.text)}</p>
+        <p class="secret-text">${highlightedText}</p>
         <div class="meta">${timeAgo(ms)}</div>
         <div class="card-actions">
           <button class="btn-like${liked ? ' liked' : ''}" id="like-${d.id}">Like (${likes})</button>
           <button class="btn-reply">Reply</button>
+          <button class="btn-share">Share</button>
         </div>
         <div class="replies-section" id="replies-${d.id}">
           <div class="reply-input-wrap" id="reply-input-${d.id}">
@@ -199,18 +269,40 @@
       card.querySelector('.del').addEventListener('click', () => delSecret(d.id));
       card.querySelector('.btn-like').addEventListener('click', () => likeSecret(d.id));
       card.querySelector('.btn-reply').addEventListener('click', () => toggleReply(d.id));
-      card.querySelector('.btn-send-reply').addEventListener('click', () => sendReply(d.id));
+      card.querySelector('.btn-share').addEventListener('click', () => shareSecret(d.id, text));
 
-      const slot = i % 3;
-      if (slot === 0) left.appendChild(card);
-      if (slot === 1) right.appendChild(card);
-      if (slot === 2) bottom.appendChild(card);
+      if (isTop) {
+        left.insertBefore(card, left.firstChild);
+      } else {
+        if (slot % 3 === 0) left.appendChild(card);
+        if (slot % 3 === 1) right.appendChild(card);
+        if (slot % 3 === 2) bottom.appendChild(card);
+        slot++;
+      }
+
       loadReplies(d.id);
     });
-  }, err => {
-    document.getElementById("colBottom").innerHTML =
-      `<div style='color:#ef4444;text-align:center;padding:20px;font-size:0.85rem'>Error: ${err.code}<br><small>${err.message}</small></div>`;
-  });
+
+    const bar = document.getElementById("searchResultsBar");
+    if (term) {
+      bar.textContent = visibleCount === 0
+        ? "no results found"
+        : `${visibleCount} result${visibleCount !== 1 ? "s" : ""} for "${searchTerm}"`;
+    } else {
+      bar.textContent = "";
+    }
+  }
+
+  function shareSecret(postId, text) {
+    const shareText = `"${text.slice(0, 100)}${text.length > 100 ? '…' : ''}" — MMU Secrets`;
+    if (navigator.share) {
+      navigator.share({ title: "MMU Secrets", text: shareText, url: window.location.href }).catch(() => {});
+    } else {
+      navigator.clipboard.writeText(shareText + "\n" + window.location.href).then(() => {
+        showToast("Copied to clipboard ✓");
+      }).catch(() => showToast("Couldn't copy"));
+    }
+  }
 
   function loadReplies(postId) {
     const rq = query(collection(db, "secrets", postId, "replies"), orderBy("ts", "asc"));
@@ -308,6 +400,7 @@
   });
 
   function esc(s) { return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+  function escReg(s) { return s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'); }
   function timeAgo(ts) {
     const d = Date.now() - ts;
     if (d < 60000)    return "just now";
