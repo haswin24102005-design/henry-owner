@@ -245,8 +245,11 @@
   const getPinned   = () => JSON.parse(localStorage.getItem("mmu_pinned") || "[]");
   const setPinned   = arr => localStorage.setItem("mmu_pinned", JSON.stringify(arr));
 
-  // reply counts tracked here so we can find most-replied
+  // reply data cached here — keyed by postId
+  // replyCounts[id] = number, replyDocs[id] = [{text,ms}], replyUnsubs[id] = unsubscribe fn
   let replyCounts = {};
+  let replyDocs   = {};
+  let replyUnsubs = {};
 
   function showSkeletons() {
     const skelly = () => `<div class="skeleton"><div class="skel-line long"></div><div class="skel-line med"></div><div class="skel-line short"></div><div class="skel-line xshort"></div></div>`;
@@ -324,6 +327,7 @@
       if (!addedPinLabel) { addLabel(left, "📌 Admin Pinned"); addedPinLabel = true; }
       left.appendChild(buildCard(d, "admin-pinned", term, ownPosts));
       startReplies(d.id);
+      paintReplies(d.id); // show cached replies immediately after DOM insert
     });
 
     // 2. Most Liked (skip if already pinned)
@@ -335,7 +339,7 @@
           addLabel(left, "🔥 Most Liked");
           left.appendChild(buildCard(d, "top-liked", term, ownPosts));
           startReplies(d.id);
-        }
+          paintReplies(d.id);        }
       }
     }
 
@@ -348,7 +352,7 @@
           addLabel(left, "💬 Most Replied");
           left.appendChild(buildCard(d, "top-replied", term, ownPosts));
           startReplies(d.id);
-        }
+          paintReplies(d.id);        }
       }
     }
 
@@ -372,6 +376,7 @@
       slot++;
 
       startReplies(d.id);
+      paintReplies(d.id); // show cached replies immediately after DOM insert
     });
 
     // Search results count
@@ -437,28 +442,34 @@
     return card;
   }
 
-  // Subscribe to replies for a post; update the counter and render list
+  // Subscribe ONCE per post. On each update, cache the data then paint into DOM.
   function startReplies(postId) {
+    if (replyUnsubs[postId]) return; // already subscribed — never double-subscribe
     const rq = query(collection(db, "secrets", postId, "replies"), orderBy("ts", "asc"));
-    onSnapshot(rq, snap => {
+    replyUnsubs[postId] = onSnapshot(rq, snap => {
       replyCounts[postId] = snap.size;
+      replyDocs[postId]   = snap.docs.map(rd => ({
+        text: rd.data().text || "",
+        ms:   rd.data().ts?.toMillis?.() ?? Date.now()
+      }));
+      paintReplies(postId);
+    });
+  }
 
-      // Update reply button label if card is in DOM
-      const btn = document.getElementById("replyBtn-" + postId);
-      if (btn) btn.textContent = snap.size > 0 ? `Reply (${snap.size})` : "Reply";
-
-      // Render replies into list
-      const list = document.getElementById("replies-list-" + postId);
-      if (!list) return;
-      list.innerHTML = "";
-      snap.docs.forEach(rd => {
-        const r  = rd.data();
-        const ms = r.ts?.toMillis?.() ?? Date.now();
-        const item = document.createElement("div");
-        item.className = "reply-item";
-        item.innerHTML = `${esc(r.text)}<div class="reply-meta">${timeAgo(ms)}</div>`;
-        list.appendChild(item);
-      });
+  // Re-paint cached replies into whatever DOM card is currently visible
+  function paintReplies(postId) {
+    const count = replyCounts[postId] || 0;
+    const docs  = replyDocs[postId]   || [];
+    const btn  = document.getElementById("replyBtn-" + postId);
+    if (btn) btn.textContent = count > 0 ? `Reply (${count})` : "Reply";
+    const list = document.getElementById("replies-list-" + postId);
+    if (!list) return;
+    list.innerHTML = "";
+    docs.forEach(r => {
+      const item = document.createElement("div");
+      item.className = "reply-item";
+      item.innerHTML = `${esc(r.text)}<div class="reply-meta">${timeAgo(r.ms)}</div>`;
+      list.appendChild(item);
     });
   }
 
