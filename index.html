@@ -111,16 +111,23 @@
 
     .card.search-highlight mark { background: #7c3aed33; color: #c4b5fd; border-radius: 2px; padding: 0 1px; }
 
-    .replies-section { margin-top: 8px; }
-    .reply-input-wrap { display: none; gap: 6px; margin-top: 8px; margin-bottom: 6px; }
-    .reply-input-wrap.open { display: flex; }
+    /* ── REPLIES: always visible ── */
+    .replies-section { margin-top: 10px; border-top: 1px solid #1e1e1e; padding-top: 10px; }
+
+    /* Reply input always shown */
+    .reply-input-wrap { display: flex; gap: 6px; margin-bottom: 8px; }
     .reply-input-wrap textarea { height: 52px; font-size: 0.78rem; padding: 8px 10px; border-radius: 8px; flex: 1; }
     .btn-send-reply { background: #7c3aed; border: none; color: #fff; border-radius: 8px; padding: 0 12px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; align-self: flex-end; height: 36px; transition: background 0.15s; }
     .btn-send-reply:hover { background: #6d28d9; }
     .btn-send-reply:disabled { background: #3b2070; cursor: not-allowed; }
-    .replies-list { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+
+    /* Replies list always visible */
+    .replies-list { display: flex; flex-direction: column; gap: 6px; }
     .reply-item { background: #222; border-left: 2px solid #7c3aed; border-radius: 0 7px 7px 0; padding: 8px 10px; font-size: 0.78rem; color: #ddd; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
     .reply-item .reply-meta { font-size: 0.65rem; color: #666; margin-top: 4px; }
+
+    /* No replies yet placeholder */
+    .no-replies-yet { font-size: 0.72rem; color: #2e2e2e; font-style: italic; margin-bottom: 6px; }
 
     .del { display: none; }
     body.admin .del { display: block; position: absolute; top: 8px; right: 10px; background: none; border: none; color: #ef4444; font-size: 0.7rem; cursor: pointer; opacity: 0.5; }
@@ -192,7 +199,7 @@
   var _x = atob;
   window.__cfg = {
     k: _x("QUl6YVN5QlV5VWVGckJrVVZGUmhvQlpwNmJTeXlYOE50TzhfY1Vn"),
-    d: _x("bW11c2VjcmV0LWZmNWVmLmZpcmViYXNlc2FwcC5jb20="),
+    d: _x("bW11c2VjcmV0LWZmNWVmLmZpcmViYXNlYXBwLmNvbQ=="),
     p: _x("bW11c2VjcmV0LWZmNWVm"),
     s: _x("bW11c2VjcmV0LWZmNWVmLmZpcmViYXNlc3RvcmFnZS5hcHA="),
     m: _x("NTI1NTQ3MzcyNzI1"),
@@ -414,7 +421,7 @@
 
     card.querySelector('.del').addEventListener('click', () => delSecret(d.id));
     card.querySelector('.btn-like').addEventListener('click', () => likeSecret(d.id));
-    card.querySelector(`#replyBtn-${d.id}`).addEventListener('click', () => toggleReply(d.id));
+    card.querySelector(`#replyBtn-${d.id}`).addEventListener('click', () => document.getElementById('reply-txt-' + d.id)?.focus());
     card.querySelector('.btn-share').addEventListener('click', () => shareSecret(d.id, text));
     card.querySelector(`#pin-${d.id}`).addEventListener('click', () => togglePin(d.id));
     card.querySelector(`#reply-btn-${d.id}`).addEventListener('click', () => sendReply(d.id));
@@ -424,13 +431,7 @@
 
   function startReplies(postId) {
     if (window.__activeReplyListeners?.has(postId)) {
-      const list = document.getElementById("replies-list-" + postId);
-      if (list && list.children.length === 0 && replyCounts[postId] > 0) {
-        // Fallback if layout structural redraw dropped elements from view
-        window.__activeReplyListeners.delete(postId);
-      } else {
-        return;
-      }
+      return;
     }
     if (!window.__activeReplyListeners) window.__activeReplyListeners = new Set();
     window.__activeReplyListeners.add(postId);
@@ -439,9 +440,6 @@
     onSnapshot(rq, snap => {
       const oldCount = replyCounts[postId] || 0;
       replyCounts[postId] = snap.size;
-
-      const btn = document.getElementById("replyBtn-" + postId);
-      if (btn) btn.textContent = snap.size > 0 ? `Reply (${snap.size})` : "Reply";
 
       const list = document.getElementById("replies-list-" + postId);
       if (list) {
@@ -456,8 +454,14 @@
         });
       }
 
+      // Update Reply button count
+      const replyBtn = document.getElementById("replyBtn-" + postId);
+      if (replyBtn) replyBtn.textContent = snap.size > 0 ? `Reply (${snap.size})` : "Reply";
+
       if (oldCount !== snap.size) {
-        renderCards(document.getElementById("searchInput").value.trim());
+        // Partial re-render only for count changes — don't wipe whole layout
+        const btn = document.getElementById("like-" + postId);
+        // no reply toggle button to update anymore
       }
     });
   }
@@ -477,18 +481,6 @@
   }
   document.getElementById("postBtn").addEventListener("click", postSecret);
 
-  function toggleReply(postId) {
-    const wrap = document.getElementById("reply-input-" + postId);
-    if (!wrap) return;
-    wrap.classList.toggle("open");
-    if (wrap.classList.contains("open")) {
-      document.getElementById("reply-txt-" + postId)?.focus();
-      // Ensure existing replies render when container toggles open
-      window.__activeReplyListeners?.delete(postId);
-      startReplies(postId);
-    }
-  }
-
   async function sendReply(postId) {
     const txtEl = document.getElementById("reply-txt-" + postId);
     const btn   = document.getElementById("reply-btn-" + postId);
@@ -499,7 +491,6 @@
     try {
       await addDoc(collection(db, "secrets", postId, "replies"), { text: txt, ts: serverTimestamp() });
       txtEl.value = "";
-      document.getElementById("reply-input-" + postId)?.classList.remove("open");
       showToast(txt.toLowerCase().includes("#takedown") ? "Report submitted. Admin will review." : "Reply posted ✓");
     } catch (e) { showToast("Error: " + e.code); }
     btn.disabled = false; btn.textContent = "Send";
