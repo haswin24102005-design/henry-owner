@@ -111,11 +111,12 @@
 
     .card.search-highlight mark { background: #7c3aed33; color: #c4b5fd; border-radius: 2px; padding: 0 1px; }
 
-    /* ── REPLIES: always visible ── */
+    /* ── REPLIES ── */
     .replies-section { margin-top: 10px; border-top: 1px solid #1e1e1e; padding-top: 10px; }
 
-    /* Reply input always shown */
-    .reply-input-wrap { display: flex; gap: 6px; margin-bottom: 8px; }
+    /* Reply input hidden until Reply is clicked */
+    .reply-input-wrap { display: none; gap: 6px; margin-bottom: 8px; }
+    .reply-input-wrap.open { display: flex; }
     .reply-input-wrap textarea { height: 52px; font-size: 0.78rem; padding: 8px 10px; border-radius: 8px; flex: 1; }
     .btn-send-reply { background: #7c3aed; border: none; color: #fff; border-radius: 8px; padding: 0 12px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; align-self: flex-end; height: 36px; transition: background 0.15s; }
     .btn-send-reply:hover { background: #6d28d9; }
@@ -421,7 +422,7 @@
 
     card.querySelector('.del').addEventListener('click', () => delSecret(d.id));
     card.querySelector('.btn-like').addEventListener('click', () => likeSecret(d.id));
-    card.querySelector(`#replyBtn-${d.id}`).addEventListener('click', () => document.getElementById('reply-txt-' + d.id)?.focus());
+    card.querySelector(`#replyBtn-${d.id}`).addEventListener('click', () => { const w = document.getElementById('reply-input-' + d.id); if(w){ w.classList.toggle('open'); if(w.classList.contains('open')) document.getElementById('reply-txt-' + d.id)?.focus(); } });
     card.querySelector('.btn-share').addEventListener('click', () => shareSecret(d.id, text));
     card.querySelector(`#pin-${d.id}`).addEventListener('click', () => togglePin(d.id));
     card.querySelector(`#reply-btn-${d.id}`).addEventListener('click', () => sendReply(d.id));
