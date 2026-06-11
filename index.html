@@ -269,7 +269,27 @@
 
   onSnapshot(q, snap => {
     document.getElementById("countVal").textContent = snap.size;
+
+    // If only like counts changed (same IDs, same order), patch in-place
+    const newIds = snap.docs.map(d => d.id).join(',');
+    const oldIds = allDocs.map(d => d.id).join(',');
+    if (oldIds === newIds && allDocs.length > 0) {
+      snap.docs.forEach(d => {
+        const oldDoc = allDocs.find(x => x.id === d.id);
+        const newLikes = d.data().likes || 0;
+        const oldLikes = oldDoc?.data().likes || 0;
+        if (newLikes !== oldLikes) {
+          const btn = document.getElementById("like-" + d.id);
+          if (btn) btn.textContent = "Like (" + newLikes + ")";
+        }
+      });
+      allDocs = snap.docs;
+      return; // skip full re-render, replies stay intact
+    }
+
+    // Full re-render only when posts are added/deleted
     allDocs = snap.docs;
+    window.__activeReplyListeners = new Set(); // reset so replies re-attach
     renderCards(document.getElementById("searchInput").value.trim());
   }, err => {
     document.getElementById("colBottom").innerHTML =
@@ -414,7 +434,7 @@
       </div>
       <div class="replies-section" id="replies-${d.id}">
         <div class="reply-input-wrap" id="reply-input-${d.id}">
-          <textarea placeholder="Reply anonymously… " id="reply-txt-${d.id}"></textarea>
+          <textarea placeholder="Reply anonymously…" id="reply-txt-${d.id}"></textarea>
           <button class="btn-send-reply" id="reply-btn-${d.id}">Send</button>
         </div>
         <div class="replies-list" id="replies-list-${d.id}"></div>
@@ -504,7 +524,13 @@
       await updateDoc(doc(db, "secrets", postId), { likes: increment(1) });
       setLiked([...liked, postId]);
       const btn = document.getElementById("like-" + postId);
-      if (btn) btn.classList.add("liked");
+      if (btn) {
+        btn.classList.add("liked");
+        // Update count text immediately without waiting for onSnapshot
+        const match = btn.textContent.match(/\d+/);
+        const cur = match ? parseInt(match[0]) : 0;
+        btn.textContent = "Like (" + (cur + 1) + ")";
+      }
     } catch (e) { showToast("Error: " + e.code); }
   }
 
