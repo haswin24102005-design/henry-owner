@@ -37,6 +37,19 @@
     textarea { width: 100%; height: 110px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 14px; color: #e8e8e8; font-family: 'Inter', sans-serif; font-size: 0.9rem; resize: none; outline: none; transition: border-color 0.2s; }
     textarea:focus { border-color: #7c3aed; }
     textarea::placeholder { color: #383838; }
+
+    /* ── IMAGE UPLOAD ── */
+    .img-upload-row { width: 100%; margin-top: 8px; display: flex; align-items: center; gap: 10px; }
+    .img-upload-label { display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.75rem; color: #555; background: #1a1a1a; border: 1px dashed #2a2a2a; border-radius: 8px; padding: 7px 12px; transition: border-color 0.2s, color 0.2s; white-space: nowrap; }
+    .img-upload-label:hover { border-color: #7c3aed; color: #a78bfa; }
+    .img-upload-label input { display: none; }
+    .img-preview-wrap { position: relative; flex-shrink: 0; }
+    .img-preview { width: 44px; height: 44px; object-fit: cover; border-radius: 7px; border: 1px solid #2a2a2a; display: none; }
+    .img-preview.visible { display: block; }
+    .img-clear { position: absolute; top: -6px; right: -6px; background: #ef4444; border: none; color: #fff; border-radius: 50%; width: 16px; height: 16px; font-size: 9px; cursor: pointer; display: none; align-items: center; justify-content: center; line-height: 1; }
+    .img-clear.visible { display: flex; }
+    .img-pending-note { font-size: 0.65rem; color: #555; margin-top: 4px; line-height: 1.4; width: 100%; }
+
     button.post { width: 100%; margin-top: 8px; padding: 11px; background: #7c3aed; color: #fff; border: none; border-radius: 10px; font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: background 0.18s; }
     button.post:hover { background: #6d28d9; }
     button.post:disabled { background: #3b2070; cursor: not-allowed; }
@@ -46,11 +59,7 @@
     .col-bottom { padding: 10px 16px 40px; display: flex; flex-direction: column; gap: 12px; }
     .col-right { padding: 10px 20px 40px 12px; display: flex; flex-direction: column; gap: 12px; border-left: 1px solid #1a1a1a; }
 
-    .col-left-section-label {
-      font-size: 0.6rem; color: #2e2e2e; text-transform: uppercase;
-      letter-spacing: 0.1em; padding: 4px 0 2px;
-      border-bottom: 1px solid #1a1a1a; margin-bottom: 2px; margin-top: 6px;
-    }
+    .col-left-section-label { font-size: 0.6rem; color: #2e2e2e; text-transform: uppercase; letter-spacing: 0.1em; padding: 4px 0 2px; border-bottom: 1px solid #1a1a1a; margin-bottom: 2px; margin-top: 6px; }
     .col-left-section-label:first-child { margin-top: 0; }
 
     .skeleton { background: #141414; border: 1px solid #1e1e1e; border-radius: 11px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
@@ -63,76 +72,78 @@
     .card > p.secret-text { font-size: 0.85rem; line-height: 1.65; color: #ccc; white-space: pre-wrap; word-break: break-word; }
     .col-bottom .card > p.secret-text { font-size: 0.9rem; }
     .card .meta { margin-top: 8px; font-size: 0.68rem; color: #555; }
-    .card-actions { display: flex; align-items: center; gap: 16px; margin-top: 10px; border-top: 1px solid #1e1e1e; padding-top: 8px; }
+    .card-actions { display: flex; align-items: center; gap: 16px; margin-top: 10px; border-top: 1px solid #1e1e1e; padding-top: 8px; flex-wrap: wrap; }
     .btn-like, .btn-reply, .btn-share { background: none; border: none; color: #666; font-size: 0.72rem; cursor: pointer; padding: 4px 0; border-radius: 4px; transition: color 0.15s; letter-spacing: 0.02em; display: inline-flex; align-items: center; gap: 4px; }
     .btn-like:hover, .btn-reply:hover, .btn-share:hover { color: #a78bfa; }
     .btn-like.liked { color: #7c3aed; font-weight: 500; }
     .card.own-post { border-color: #231942; }
 
+    /* ── CARD IMAGE ── */
+    .card-img { width: 100%; border-radius: 8px; margin-top: 10px; object-fit: cover; max-height: 280px; cursor: zoom-in; display: block; border: 1px solid #2a2a2a; }
+    .card-img-pending { font-size: 0.65rem; color: #f59e0b; background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.2); border-radius: 6px; padding: 5px 10px; margin-top: 8px; display: inline-flex; align-items: center; gap: 5px; }
+
+    /* Lightbox */
+    .lightbox { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.92); z-index: 999; align-items: center; justify-content: center; cursor: zoom-out; }
+    .lightbox.open { display: flex; }
+    .lightbox img { max-width: 90vw; max-height: 90vh; border-radius: 10px; object-fit: contain; }
+
     /* Most Liked */
     .card.top-liked { border-color: #7c3aed; background: #100e1a; padding-top: 22px; }
-    .card.top-liked::before {
-      content: '🔥 Most Liked'; position: absolute; top: -10px; left: 14px;
-      font-size: 0.62rem; color: #a78bfa; background: #1a1530;
-      border: 1px solid #7c3aed; padding: 2px 8px; border-radius: 20px;
-      letter-spacing: 0.06em; font-weight: 500;
-    }
+    .card.top-liked::before { content: '🔥 Most Liked'; position: absolute; top: -10px; left: 14px; font-size: 0.62rem; color: #a78bfa; background: #1a1530; border: 1px solid #7c3aed; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.06em; font-weight: 500; }
     .card.top-liked > p.secret-text { color: #e8e8e8; }
 
     /* Most Replied */
     .card.top-replied { border-color: #0ea5e9; background: #0a1420; padding-top: 22px; }
-    .card.top-replied::before {
-      content: '💬 Most Replied'; position: absolute; top: -10px; left: 14px;
-      font-size: 0.62rem; color: #7dd3fc; background: #0c1a28;
-      border: 1px solid #0ea5e9; padding: 2px 8px; border-radius: 20px;
-      letter-spacing: 0.06em; font-weight: 500;
-    }
+    .card.top-replied::before { content: '💬 Most Replied'; position: absolute; top: -10px; left: 14px; font-size: 0.62rem; color: #7dd3fc; background: #0c1a28; border: 1px solid #0ea5e9; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.06em; font-weight: 500; }
     .card.top-replied > p.secret-text { color: #e8e8e8; }
 
     /* Admin Pinned */
     .card.admin-pinned { border-color: #f59e0b; background: #161009; padding-top: 22px; }
-    .card.admin-pinned::before {
-      content: '📌 Pinned'; position: absolute; top: -10px; left: 14px;
-      font-size: 0.62rem; color: #fcd34d; background: #1c1408;
-      border: 1px solid #f59e0b; padding: 2px 8px; border-radius: 20px;
-      letter-spacing: 0.06em; font-weight: 500;
-    }
+    .card.admin-pinned::before { content: '📌 Pinned'; position: absolute; top: -10px; left: 14px; font-size: 0.62rem; color: #fcd34d; background: #1c1408; border: 1px solid #f59e0b; padding: 2px 8px; border-radius: 20px; letter-spacing: 0.06em; font-weight: 500; }
     .card.admin-pinned > p.secret-text { color: #e8e8e8; }
 
-    /* Pin button — only in admin mode */
+    /* Pin / Del buttons */
     .btn-pin { display: none; }
-    body.admin .btn-pin {
-      display: inline-flex; background: none; border: none; color: #666;
-      font-size: 0.72rem; cursor: pointer; padding: 4px 0;
-      letter-spacing: 0.02em; align-items: center; gap: 4px; transition: color 0.15s;
-    }
+    body.admin .btn-pin { display: inline-flex; background: none; border: none; color: #666; font-size: 0.72rem; cursor: pointer; padding: 4px 0; letter-spacing: 0.02em; align-items: center; gap: 4px; transition: color 0.15s; }
     body.admin .btn-pin:hover { color: #f59e0b; }
     body.admin .btn-pin.pinned { color: #f59e0b; font-weight: 500; }
 
+    .del { display: none; }
+    body.admin .del { display: block; position: absolute; top: 8px; right: 10px; background: none; border: none; color: #ef4444; font-size: 0.7rem; cursor: pointer; opacity: 0.5; }
+    body.admin .del:hover { opacity: 1; }
+
+    /* ── ADMIN IMAGE QUEUE ── */
+    .admin-queue { display: none; width: 100%; max-width: 880px; margin: 0 auto 30px; padding: 0 16px; }
+    body.admin .admin-queue { display: block; }
+    .admin-queue-header { font-size: 0.7rem; color: #f59e0b; letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 1px solid #2a2a2a; padding-bottom: 8px; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .admin-queue-header span { background: #ef4444; color: #fff; border-radius: 10px; padding: 1px 7px; font-size: 0.65rem; }
+    .queue-empty { font-size: 0.78rem; color: #333; text-align: center; padding: 20px 0; }
+    .queue-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; }
+    .queue-card { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px; overflow: hidden; }
+    .queue-card img { width: 100%; height: 140px; object-fit: cover; display: block; }
+    .queue-card-body { padding: 10px; }
+    .queue-card-text { font-size: 0.75rem; color: #888; margin-bottom: 8px; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .queue-card-meta { font-size: 0.65rem; color: #444; margin-bottom: 8px; }
+    .queue-card-actions { display: flex; gap: 6px; }
+    .btn-approve { flex: 1; background: #10b981; border: none; color: #fff; border-radius: 6px; padding: 6px; font-size: 0.72rem; cursor: pointer; transition: background 0.15s; }
+    .btn-approve:hover { background: #059669; }
+    .btn-reject { flex: 1; background: #ef4444; border: none; color: #fff; border-radius: 6px; padding: 6px; font-size: 0.72rem; cursor: pointer; transition: background 0.15s; }
+    .btn-reject:hover { background: #dc2626; }
+
+    /* Search highlight */
     .card.search-highlight mark { background: #7c3aed33; color: #c4b5fd; border-radius: 2px; padding: 0 1px; }
 
     /* ── REPLIES ── */
     .replies-section { margin-top: 10px; border-top: 1px solid #1e1e1e; padding-top: 10px; }
-
-    /* Reply input hidden until Reply is clicked */
     .reply-input-wrap { display: none; gap: 6px; margin-bottom: 8px; }
     .reply-input-wrap.open { display: flex; }
     .reply-input-wrap textarea { height: 52px; font-size: 0.78rem; padding: 8px 10px; border-radius: 8px; flex: 1; }
     .btn-send-reply { background: #7c3aed; border: none; color: #fff; border-radius: 8px; padding: 0 12px; font-size: 0.75rem; cursor: pointer; white-space: nowrap; align-self: flex-end; height: 36px; transition: background 0.15s; }
     .btn-send-reply:hover { background: #6d28d9; }
     .btn-send-reply:disabled { background: #3b2070; cursor: not-allowed; }
-
-    /* Replies list always visible */
     .replies-list { display: flex; flex-direction: column; gap: 6px; }
     .reply-item { background: #222; border-left: 2px solid #7c3aed; border-radius: 0 7px 7px 0; padding: 8px 10px; font-size: 0.78rem; color: #ddd; line-height: 1.55; white-space: pre-wrap; word-break: break-word; }
     .reply-item .reply-meta { font-size: 0.65rem; color: #666; margin-top: 4px; }
-
-    /* No replies yet placeholder */
-    .no-replies-yet { font-size: 0.72rem; color: #2e2e2e; font-style: italic; margin-bottom: 6px; }
-
-    .del { display: none; }
-    body.admin .del { display: block; position: absolute; top: 8px; right: 10px; background: none; border: none; color: #ef4444; font-size: 0.7rem; cursor: pointer; opacity: 0.5; }
-    body.admin .del:hover { opacity: 1; }
 
     .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(60px); background: #1e1e1e; border: 1px solid #2a2a2a; color: #a78bfa; padding: 10px 22px; border-radius: 8px; font-size: 0.85rem; transition: transform 0.3s; white-space: nowrap; z-index: 99; }
     .toast.show { transform: translateX(-50%) translateY(0); }
@@ -146,6 +157,7 @@
       .center-box { padding: 10px 16px 20px; }
       .header { padding: 36px 16px 16px; }
       .live-counter { position: absolute; top: 52px; right: 16px; }
+      .queue-grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
 </head>
@@ -153,7 +165,7 @@
 
 <div class="top-ticker-banner">
   <div class="ticker-wrapper">
-    <span class="ticker-item">⚠️ Feel offended by any confession? Simply hit Reply and type <strong>#takedown</strong> — the administration team will prioritize review and process manually. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ⚠️ Feel offended by any confession? Simply hit Reply and type <strong>#takedown</strong> — the administration team will prioritize review and process manually.</span>
+    <span class="ticker-item">⚠️ Feel offended by any confession? Simply hit Reply and type <strong>#takedown</strong> — the administration team will prioritize review and process manually. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 🖼️ Images are reviewed by admin before appearing publicly. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ⚠️ Feel offended by any confession? Simply hit Reply and type <strong>#takedown</strong> — the administration team will prioritize review and process manually.</span>
   </div>
 </div>
 
@@ -163,6 +175,11 @@
 </div>
 
 <div class="toast" id="toast"></div>
+
+<!-- Lightbox -->
+<div class="lightbox" id="lightbox">
+  <img src="" id="lightboxImg" alt="full image" />
+</div>
 
 <div class="page" id="page">
   <div class="header">
@@ -180,7 +197,30 @@
     <div class="post-label">post your confession here</div>
     <div class="anon-name" id="anonName"></div>
     <textarea id="txt" placeholder="What's your secret…"></textarea>
+
+    <!-- Image upload row -->
+    <div class="img-upload-row">
+      <label class="img-upload-label">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        Attach image
+        <input type="file" id="imgInput" accept="image/*" />
+      </label>
+      <div class="img-preview-wrap">
+        <img id="imgPreview" class="img-preview" src="" alt="preview" />
+        <button class="img-clear" id="imgClear" title="Remove image">✕</button>
+      </div>
+    </div>
+    <div class="img-pending-note" id="imgNote" style="display:none">🔍 Image will be reviewed by admin before appearing on the wall.</div>
+
     <button class="post" id="postBtn">Post Anonymously</button>
+  </div>
+
+  <!-- Admin image approval queue (only visible in admin mode) -->
+  <div class="admin-queue" id="adminQueue">
+    <div class="admin-queue-header">
+      🖼️ Pending Image Approvals <span id="pendingCount">0</span>
+    </div>
+    <div id="queueInner"><div class="queue-empty">No pending images.</div></div>
   </div>
 
   <div class="content-grid">
@@ -190,7 +230,8 @@
   </div>
 
   <div class="notice-bar">
-    😔 Feel offended by any post? Reply to it and include <strong>#takedown</strong> — the admin will review and delete it manually.
+    😔 Feel offended by any post? Reply to it and include <strong>#takedown</strong> — the admin will review and delete it manually.<br>
+    🖼️ Images are reviewed by admin before appearing on the wall.
   </div>
   <footer id="footer">MMU Secrets · anonymous forever</footer>
 </div>
@@ -215,7 +256,7 @@
   import {
     getFirestore, collection, addDoc, onSnapshot,
     query, orderBy, deleteDoc, doc, serverTimestamp,
-    updateDoc, increment
+    updateDoc, increment, getDocs
   } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
   const c = window.__cfg;
@@ -255,6 +296,45 @@
 
   let replyCounts = {};
 
+  // ── IMAGE UPLOAD PREVIEW ──
+  let pendingImageBase64 = null;
+
+  const imgInput   = document.getElementById("imgInput");
+  const imgPreview = document.getElementById("imgPreview");
+  const imgClear   = document.getElementById("imgClear");
+  const imgNote    = document.getElementById("imgNote");
+
+  imgInput.addEventListener("change", e => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 2 * 1024 * 1024) { showToast("Image too large (max 2 MB)"); imgInput.value = ""; return; }
+    const reader = new FileReader();
+    reader.onload = ev => {
+      pendingImageBase64 = ev.target.result; // data URL
+      imgPreview.src = pendingImageBase64;
+      imgPreview.classList.add("visible");
+      imgClear.classList.add("visible");
+      imgNote.style.display = "block";
+    };
+    reader.readAsDataURL(file);
+  });
+
+  imgClear.addEventListener("click", () => {
+    pendingImageBase64 = null;
+    imgInput.value = "";
+    imgPreview.src = "";
+    imgPreview.classList.remove("visible");
+    imgClear.classList.remove("visible");
+    imgNote.style.display = "none";
+  });
+
+  // ── LIGHTBOX ──
+  const lightbox    = document.getElementById("lightbox");
+  const lightboxImg = document.getElementById("lightboxImg");
+  lightbox.addEventListener("click", () => lightbox.classList.remove("open"));
+  function openLightbox(src) { lightboxImg.src = src; lightbox.classList.add("open"); }
+
+  // ── SKELETONS ──
   function showSkeletons() {
     const skelly = () => `<div class="skeleton"><div class="skel-line long"></div><div class="skel-line med"></div><div class="skel-line short"></div><div class="skel-line xshort"></div></div>`;
     document.getElementById("colLeft").innerHTML   = skelly() + skelly();
@@ -269,8 +349,6 @@
 
   onSnapshot(q, snap => {
     document.getElementById("countVal").textContent = snap.size;
-
-    // If only like counts changed (same IDs, same order), patch in-place
     const newIds = snap.docs.map(d => d.id).join(',');
     const oldIds = allDocs.map(d => d.id).join(',');
     if (oldIds === newIds && allDocs.length > 0) {
@@ -284,17 +362,66 @@
         }
       });
       allDocs = snap.docs;
-      return; // skip full re-render, replies stay intact
+      return;
     }
-
-    // Full re-render only when posts are added/deleted
     allDocs = snap.docs;
-    window.__activeReplyListeners = new Set(); // reset so replies re-attach
+    window.__activeReplyListeners = new Set();
     renderCards(document.getElementById("searchInput").value.trim());
   }, err => {
     document.getElementById("colBottom").innerHTML =
       `<div style='color:#ef4444;text-align:center;padding:20px;font-size:0.85rem'>Error: ${err.code}<br><small>${err.message}</small></div>`;
   });
+
+  // ── ADMIN: listen to pending_images ──
+  onSnapshot(query(collection(db, "pending_images"), orderBy("ts", "desc")), snap => {
+    const count = snap.size;
+    document.getElementById("pendingCount").textContent = count;
+    const inner = document.getElementById("queueInner");
+    if (count === 0) {
+      inner.innerHTML = '<div class="queue-empty">No pending images. ✓</div>';
+      return;
+    }
+    const grid = document.createElement("div");
+    grid.className = "queue-grid";
+    snap.docs.forEach(pd => {
+      const data = pd.data();
+      const card = document.createElement("div");
+      card.className = "queue-card";
+      const ms = data.ts?.toMillis?.() ?? Date.now();
+      card.innerHTML = `
+        <img src="${esc(data.imageBase64)}" alt="pending image" style="cursor:zoom-in" />
+        <div class="queue-card-body">
+          <div class="queue-card-text">${esc(data.text || "")}</div>
+          <div class="queue-card-meta">Submitted ${timeAgo(ms)}</div>
+          <div class="queue-card-actions">
+            <button class="btn-approve">✓ Approve</button>
+            <button class="btn-reject">✕ Reject</button>
+          </div>
+        </div>`;
+      card.querySelector("img").addEventListener("click", () => openLightbox(data.imageBase64));
+      card.querySelector(".btn-approve").addEventListener("click", () => approveImage(pd.id, data));
+      card.querySelector(".btn-reject").addEventListener("click", () => rejectImage(pd.id));
+      grid.appendChild(card);
+    });
+    inner.innerHTML = "";
+    inner.appendChild(grid);
+  });
+
+  async function approveImage(pendingId, data) {
+    try {
+      // Attach approved image to the secret post
+      await updateDoc(doc(db, "secrets", data.postId), { imageBase64: data.imageBase64, imageApproved: true });
+      await deleteDoc(doc(db, "pending_images", pendingId));
+      showToast("Image approved ✓");
+    } catch (e) { showToast("Error: " + e.code); }
+  }
+
+  async function rejectImage(pendingId) {
+    try {
+      await deleteDoc(doc(db, "pending_images", pendingId));
+      showToast("Image rejected and removed.");
+    } catch (e) { showToast("Error: " + e.code); }
+  }
 
   document.getElementById("searchInput").addEventListener("input", e => {
     renderCards(e.target.value.trim());
@@ -317,12 +444,8 @@
     const maxLikes  = Math.max(...allDocs.map(d => d.data().likes || 0));
     const maxReplies = Math.max(...Object.values(replyCounts).concat([0]));
 
-    const topLikedId   = maxLikes > 0
-      ? allDocs.find(d => (d.data().likes || 0) === maxLikes)?.id
-      : null;
-    const topRepliedId = maxReplies > 0
-      ? Object.entries(replyCounts).sort((a, b) => b[1] - a[1])[0]?.[0]
-      : null;
+    const topLikedId   = maxLikes > 0 ? allDocs.find(d => (d.data().likes || 0) === maxLikes)?.id : null;
+    const topRepliedId = maxReplies > 0 ? Object.entries(replyCounts).sort((a, b) => b[1] - a[1])[0]?.[0] : null;
 
     const leftSpecialIds = new Set();
     pinnedIds.forEach(id => leftSpecialIds.add(id));
@@ -336,7 +459,6 @@
       parent.appendChild(el);
     };
 
-    // ── LEFT: special cards first ──
     let addedPinLabel = false;
     pinnedIds.forEach(pid => {
       const d = allDocs.find(x => x.id === pid);
@@ -372,17 +494,13 @@
       }
     }
 
-    // ── ALL other posts go into left / bottom / right ──
     let slot = 0;
     allDocs.forEach(d => {
       startReplies(d.id);
       const text = d.data().text || "";
       if (term && !text.toLowerCase().includes(term)) return;
-
       if (leftSpecialIds.has(d.id)) return;
-
       const card = buildCard(d, null, term, ownPosts);
-
       if (slot % 3 === 0)      left.appendChild(card);
       else if (slot % 3 === 1) bottom.appendChild(card);
       else                     right.appendChild(card);
@@ -392,9 +510,7 @@
     const bar = document.getElementById("searchResultsBar");
     if (term) {
       const vis = allDocs.filter(d => (d.data().text || "").toLowerCase().includes(term)).length;
-      bar.textContent = vis === 0
-        ? "no results found"
-        : `${vis} result${vis !== 1 ? "s" : ""} for "${searchTerm}"`;
+      bar.textContent = vis === 0 ? "no results found" : `${vis} result${vis !== 1 ? "s" : ""} for "${searchTerm}"`;
     } else {
       bar.textContent = "";
     }
@@ -410,6 +526,10 @@
     const isPinned = getPinned().includes(d.id);
     const replyCount = replyCounts[d.id] || 0;
 
+    // Image state
+    const hasApprovedImage = p.imageBase64 && p.imageApproved;
+    const hasPendingImage  = isOwn && p.imagePending; // show "pending" hint only to poster
+
     let cls = "card";
     if (isOwn)        cls += " own-post";
     if (specialClass) cls += " " + specialClass;
@@ -422,9 +542,18 @@
     const card = document.createElement("div");
     card.className = cls;
     card.id = "card-" + d.id;
+
+    let imageHTML = "";
+    if (hasApprovedImage) {
+      imageHTML = `<img class="card-img" src="${esc(p.imageBase64)}" alt="confession image" />`;
+    } else if (hasPendingImage) {
+      imageHTML = `<div class="card-img-pending">⏳ Your image is awaiting admin review</div>`;
+    }
+
     card.innerHTML = `
       <button class="del">✕</button>
       <p class="secret-text">${highlightedText}</p>
+      ${imageHTML}
       <div class="meta">${timeAgo(ms)}</div>
       <div class="card-actions">
         <button class="btn-like${liked ? ' liked' : ''}" id="like-${d.id}">Like (${likes})</button>
@@ -440,9 +569,16 @@
         <div class="replies-list" id="replies-list-${d.id}"></div>
       </div>`;
 
+    // Lightbox on image click
+    const cardImg = card.querySelector(".card-img");
+    if (cardImg) cardImg.addEventListener("click", () => openLightbox(p.imageBase64));
+
     card.querySelector('.del').addEventListener('click', () => delSecret(d.id));
     card.querySelector('.btn-like').addEventListener('click', () => likeSecret(d.id));
-    card.querySelector(`#replyBtn-${d.id}`).addEventListener('click', () => { const w = document.getElementById('reply-input-' + d.id); if(w){ w.classList.toggle('open'); if(w.classList.contains('open')) document.getElementById('reply-txt-' + d.id)?.focus(); } });
+    card.querySelector(`#replyBtn-${d.id}`).addEventListener('click', () => {
+      const w = document.getElementById('reply-input-' + d.id);
+      if (w) { w.classList.toggle('open'); if (w.classList.contains('open')) document.getElementById('reply-txt-' + d.id)?.focus(); }
+    });
     card.querySelector('.btn-share').addEventListener('click', () => shareSecret(d.id, text));
     card.querySelector(`#pin-${d.id}`).addEventListener('click', () => togglePin(d.id));
     card.querySelector(`#reply-btn-${d.id}`).addEventListener('click', () => sendReply(d.id));
@@ -451,17 +587,13 @@
   }
 
   function startReplies(postId) {
-    if (window.__activeReplyListeners?.has(postId)) {
-      return;
-    }
+    if (window.__activeReplyListeners?.has(postId)) return;
     if (!window.__activeReplyListeners) window.__activeReplyListeners = new Set();
     window.__activeReplyListeners.add(postId);
 
     const rq = query(collection(db, "secrets", postId, "replies"), orderBy("ts", "asc"));
     onSnapshot(rq, snap => {
-      const oldCount = replyCounts[postId] || 0;
       replyCounts[postId] = snap.size;
-
       const list = document.getElementById("replies-list-" + postId);
       if (list) {
         list.innerHTML = "";
@@ -474,16 +606,8 @@
           list.appendChild(item);
         });
       }
-
-      // Update Reply button count
       const replyBtn = document.getElementById("replyBtn-" + postId);
       if (replyBtn) replyBtn.textContent = snap.size > 0 ? `Reply (${snap.size})` : "Reply";
-
-      if (oldCount !== snap.size) {
-        // Partial re-render only for count changes — don't wipe whole layout
-        const btn = document.getElementById("like-" + postId);
-        // no reply toggle button to update anymore
-      }
     });
   }
 
@@ -492,11 +616,37 @@
     if (!txt) return;
     const btn = document.getElementById("postBtn");
     btn.disabled = true; btn.textContent = "Posting…";
+
     try {
-      const ref = await addDoc(collection(db, "secrets"), { text: txt, ts: serverTimestamp(), likes: 0 });
+      // Post the secret (without image initially)
+      const postData = { text: txt, ts: serverTimestamp(), likes: 0 };
+      if (pendingImageBase64) postData.imagePending = true; // flag that image is being reviewed
+
+      const ref = await addDoc(collection(db, "secrets"), postData);
       addOwnPost(ref.id);
+
+      // If image attached, store in pending_images for admin review
+      if (pendingImageBase64) {
+        await addDoc(collection(db, "pending_images"), {
+          postId: ref.id,
+          text: txt,
+          imageBase64: pendingImageBase64,
+          ts: serverTimestamp()
+        });
+        showToast("Posted ✓ — image sent for review");
+      } else {
+        showToast("Posted ✓");
+      }
+
       document.getElementById("txt").value = "";
-      showToast("Posted ✓");
+      // Clear image state
+      pendingImageBase64 = null;
+      imgInput.value = "";
+      imgPreview.src = "";
+      imgPreview.classList.remove("visible");
+      imgClear.classList.remove("visible");
+      imgNote.style.display = "none";
+
     } catch (e) { showToast("Error: " + e.code); }
     btn.disabled = false; btn.textContent = "Post Anonymously";
   }
@@ -526,7 +676,6 @@
       const btn = document.getElementById("like-" + postId);
       if (btn) {
         btn.classList.add("liked");
-        // Update count text immediately without waiting for onSnapshot
         const match = btn.textContent.match(/\d+/);
         const cur = match ? parseInt(match[0]) : 0;
         btn.textContent = "Like (" + (cur + 1) + ")";
