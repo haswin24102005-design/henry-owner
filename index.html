@@ -287,14 +287,18 @@
   }
   document.getElementById("anonName").textContent = "posting as " + getAnonName();
 
-  const getLiked    = () => JSON.parse(localStorage.getItem("mmu_liked") || "[]");
-  const setLiked    = arr => localStorage.setItem("mmu_liked", JSON.stringify(arr));
-  const getOwnPosts = () => JSON.parse(sessionStorage.getItem("mmu_own") || "[]");
-  const addOwnPost  = id => sessionStorage.setItem("mmu_own", JSON.stringify([...getOwnPosts(), id]));
-  const getPinned   = () => JSON.parse(localStorage.getItem("mmu_pinned") || "[]");
-  const setPinned   = arr => localStorage.setItem("mmu_pinned", JSON.stringify(arr));
+  // Safe wrappers — never crash if storage is full or corrupted
+  const getLiked    = () => { try { return JSON.parse(localStorage.getItem("mmu_liked") || "[]"); } catch { return []; } };
+  const setLiked    = arr => { try { localStorage.setItem("mmu_liked", JSON.stringify(arr)); } catch {} };
+  const getOwnPosts = () => { try { return JSON.parse(sessionStorage.getItem("mmu_own") || "[]"); } catch { return []; } };
+  const addOwnPost  = id => { try { sessionStorage.setItem("mmu_own", JSON.stringify([...getOwnPosts(), id])); } catch {} };
+  const getPinned   = () => { try { return JSON.parse(localStorage.getItem("mmu_pinned") || "[]"); } catch { return []; } };
+  const setPinned   = arr => { try { localStorage.setItem("mmu_pinned", JSON.stringify(arr)); } catch {} };
 
-  let replyCounts = {};
+  // replyCounts never gets cleared — only updated, so counts survive re-renders
+  const replyCounts = {};
+  // replyUnsubs: keep one live listener per postId, never restart them
+  const replyUnsubs = {};
 
   // ── IMAGE UPLOAD PREVIEW ──
   let pendingImageBase64 = null;
@@ -343,33 +347,65 @@
   }
   showSkeletons();
 
-  let allDocs = [];
+  let allDocs  = [];
+  let firstLoad = true;
 
   const q = query(collection(db, "secrets"), orderBy("ts", "desc"));
-
   onSnapshot(q, snap => {
     document.getElementById("countVal").textContent = snap.size;
-    const newIds = snap.docs.map(d => d.id).join(',');
-    const oldIds = allDocs.map(d => d.id).join(',');
-    if (oldIds === newIds && allDocs.length > 0) {
+
+    const newIds  = snap.docs.map(d => d.id).join(",");
+    const oldIds  = allDocs.map(d => d.id).join(",");
+    const sameIds = (newIds === oldIds) && !firstLoad;
+
+    if (sameIds) {
+      // PATCH IN-PLACE — never wipe the DOM, never kill replies
       snap.docs.forEach(d => {
-        const oldDoc = allDocs.find(x => x.id === d.id);
-        const newLikes = d.data().likes || 0;
-        const oldLikes = oldDoc?.data().likes || 0;
-        if (newLikes !== oldLikes) {
+        const oldDoc  = allDocs.find(x => x.id === d.id);
+        const newData = d.data();
+        const oldData = oldDoc ? oldDoc.data() : {};
+
+        // Patch like count label only
+        if ((newData.likes || 0) !== (oldData.likes || 0)) {
           const btn = document.getElementById("like-" + d.id);
-          if (btn) btn.textContent = "Like (" + newLikes + ")";
+          if (btn) btn.textContent = "Like (" + (newData.likes || 0) + ")";
+        }
+
+        // Patch image approval: inject image without full re-render
+        if (newData.imageApproved && !oldData.imageApproved && newData.imageBase64) {
+          const card = document.getElementById("card-" + d.id);
+          if (card) {
+            const pending = card.querySelector(".card-img-pending");
+            if (pending) pending.remove();
+            if (!card.querySelector(".card-img")) {
+              const img = document.createElement("img");
+              img.className = "card-img";
+              img.src = newData.imageBase64;
+              img.alt = "confession image";
+              img.addEventListener("click", () => openLightbox(newData.imageBase64));
+              const meta = card.querySelector(".meta");
+              if (meta) card.insertBefore(img, meta);
+            }
+          }
         }
       });
       allDocs = snap.docs;
-      return;
+      return; // replies intact, nothing wiped
     }
+
+    // Full render — new post arrived or a post was deleted
+    firstLoad = false;
     allDocs = snap.docs;
-    window.__activeReplyListeners = new Set();
+    // Ensure reply listener exists for every post (existing ones stay alive)
+    snap.docs.forEach(d => ensureReplyListener(d.id));
     renderCards(document.getElementById("searchInput").value.trim());
+
   }, err => {
     document.getElementById("colBottom").innerHTML =
-      `<div style='color:#ef4444;text-align:center;padding:20px;font-size:0.85rem'>Error: ${err.code}<br><small>${err.message}</small></div>`;
+      `<div style='color:#ef4444;text-align:center;padding:20px;font-size:0.85rem'>
+        Connection error: ${err.code}<br>
+        <small>Your posts are safe in Firebase. Refresh to reconnect.</small>
+      </div>`;
   });
 
   // ── ADMIN: listen to pending_images ──
@@ -438,19 +474,18 @@
       return;
     }
 
-    const term      = searchTerm.toLowerCase();
-    const ownPosts  = getOwnPosts();
-    const pinnedIds = getPinned();
-    const maxLikes  = Math.max(...allDocs.map(d => d.data().likes || 0));
-    const maxReplies = Math.max(...Object.values(replyCounts).concat([0]));
+    const term       = searchTerm.toLowerCase();
+    const ownPosts   = getOwnPosts();
+    const pinnedIds  = getPinned();
+    const maxLikes   = Math.max(0, ...allDocs.map(d => d.data().likes || 0));
+    const maxReplies = Math.max(0, ...Object.values(replyCounts));
 
-    const topLikedId   = maxLikes > 0 ? allDocs.find(d => (d.data().likes || 0) === maxLikes)?.id : null;
-    const topRepliedId = maxReplies > 0 ? Object.entries(replyCounts).sort((a, b) => b[1] - a[1])[0]?.[0] : null;
+    const topLikedId   = maxLikes   > 0 ? allDocs.find(d => (d.data().likes || 0) === maxLikes)?.id : null;
+    const topRepliedId = maxReplies > 0 ? Object.entries(replyCounts).sort((a,b) => b[1]-a[1])[0]?.[0] : null;
 
-    const leftSpecialIds = new Set();
-    pinnedIds.forEach(id => leftSpecialIds.add(id));
-    if (topLikedId)   leftSpecialIds.add(topLikedId);
-    if (topRepliedId) leftSpecialIds.add(topRepliedId);
+    const specialIds = new Set([...pinnedIds]);
+    if (topLikedId)   specialIds.add(topLikedId);
+    if (topRepliedId) specialIds.add(topRepliedId);
 
     const addLabel = (parent, txt) => {
       const el = document.createElement("div");
@@ -461,9 +496,8 @@
 
     let addedPinLabel = false;
     pinnedIds.forEach(pid => {
-      const d = allDocs.find(x => x.id === pid);
-      if (!d) return;
-      startReplies(d.id);
+      const d = allDocs.find(x => x.id === pid); if (!d) return;
+      ensureReplyListener(d.id);
       const text = d.data().text || "";
       if (term && !text.toLowerCase().includes(term)) return;
       if (!addedPinLabel) { addLabel(left, "📌 Admin Pinned"); addedPinLabel = true; }
@@ -473,7 +507,7 @@
     if (topLikedId && !pinnedIds.includes(topLikedId)) {
       const d = allDocs.find(x => x.id === topLikedId);
       if (d) {
-        startReplies(d.id);
+        ensureReplyListener(d.id);
         const text = d.data().text || "";
         if (!term || text.toLowerCase().includes(term)) {
           addLabel(left, "🔥 Most Liked");
@@ -485,7 +519,7 @@
     if (topRepliedId && !pinnedIds.includes(topRepliedId) && topRepliedId !== topLikedId) {
       const d = allDocs.find(x => x.id === topRepliedId);
       if (d) {
-        startReplies(d.id);
+        ensureReplyListener(d.id);
         const text = d.data().text || "";
         if (!term || text.toLowerCase().includes(term)) {
           addLabel(left, "💬 Most Replied");
@@ -496,12 +530,12 @@
 
     let slot = 0;
     allDocs.forEach(d => {
-      startReplies(d.id);
+      ensureReplyListener(d.id);
       const text = d.data().text || "";
       if (term && !text.toLowerCase().includes(term)) return;
-      if (leftSpecialIds.has(d.id)) return;
+      if (specialIds.has(d.id)) return;
       const card = buildCard(d, null, term, ownPosts);
-      if (slot % 3 === 0)      left.appendChild(card);
+      if      (slot % 3 === 0) left.appendChild(card);
       else if (slot % 3 === 1) bottom.appendChild(card);
       else                     right.appendChild(card);
       slot++;
@@ -517,18 +551,16 @@
   }
 
   function buildCard(d, specialClass, term, ownPosts) {
-    const p      = d.data();
-    const ms     = p.ts?.toMillis?.() ?? Date.now();
-    const liked  = getLiked().includes(d.id);
-    const likes  = p.likes || 0;
-    const isOwn  = ownPosts.includes(d.id);
-    const text   = p.text || "";
-    const isPinned = getPinned().includes(d.id);
+    const p          = d.data();
+    const ms         = p.ts?.toMillis?.() ?? Date.now();
+    const liked      = getLiked().includes(d.id);
+    const likes      = p.likes || 0;
+    const isOwn      = ownPosts.includes(d.id);
+    const text       = p.text || "";
+    const isPinned   = getPinned().includes(d.id);
     const replyCount = replyCounts[d.id] || 0;
-
-    // Image state
-    const hasApprovedImage = p.imageBase64 && p.imageApproved;
-    const hasPendingImage  = isOwn && p.imagePending; // show "pending" hint only to poster
+    const hasImage   = p.imageBase64 && p.imageApproved;
+    const imgPending = p.imagePending && !p.imageApproved;
 
     let cls = "card";
     if (isOwn)        cls += " own-post";
@@ -539,27 +571,23 @@
       ? esc(text).replace(new RegExp(escReg(esc(term)), "gi"), m => `<mark>${m}</mark>`)
       : esc(text);
 
+    let imageHTML = "";
+    if (hasImage)        imageHTML = `<img class="card-img" src="${esc(p.imageBase64)}" alt="confession image" />`;
+    else if (imgPending) imageHTML = `<div class="card-img-pending">⏳ Image awaiting admin review</div>`;
+
     const card = document.createElement("div");
     card.className = cls;
     card.id = "card-" + d.id;
-
-    let imageHTML = "";
-    if (hasApprovedImage) {
-      imageHTML = `<img class="card-img" src="${esc(p.imageBase64)}" alt="confession image" />`;
-    } else if (hasPendingImage) {
-      imageHTML = `<div class="card-img-pending">⏳ Your image is awaiting admin review</div>`;
-    }
-
     card.innerHTML = `
-      <button class="del">✕</button>
+      <button class="del" aria-label="delete">✕</button>
       <p class="secret-text">${highlightedText}</p>
       ${imageHTML}
       <div class="meta">${timeAgo(ms)}</div>
       <div class="card-actions">
-        <button class="btn-like${liked ? ' liked' : ''}" id="like-${d.id}">Like (${likes})</button>
-        <button class="btn-reply" id="replyBtn-${d.id}">Reply${replyCount > 0 ? ` (${replyCount})` : ''}</button>
+        <button class="btn-like${liked ? " liked" : ""}" id="like-${d.id}">Like (${likes})</button>
+        <button class="btn-reply" id="replyBtn-${d.id}">Reply${replyCount > 0 ? ` (${replyCount})` : ""}</button>
         <button class="btn-share">Share</button>
-        <button class="btn-pin${isPinned ? ' pinned' : ''}" id="pin-${d.id}">${isPinned ? '📌 Unpin' : '📌 Pin'}</button>
+        <button class="btn-pin${isPinned ? " pinned" : ""}" id="pin-${d.id}">${isPinned ? "📌 Unpin" : "📌 Pin"}</button>
       </div>
       <div class="replies-section" id="replies-${d.id}">
         <div class="reply-input-wrap" id="reply-input-${d.id}">
@@ -569,31 +597,34 @@
         <div class="replies-list" id="replies-list-${d.id}"></div>
       </div>`;
 
-    // Lightbox on image click
-    const cardImg = card.querySelector(".card-img");
-    if (cardImg) cardImg.addEventListener("click", () => openLightbox(p.imageBase64));
-
-    card.querySelector('.del').addEventListener('click', () => delSecret(d.id));
-    card.querySelector('.btn-like').addEventListener('click', () => likeSecret(d.id));
-    card.querySelector(`#replyBtn-${d.id}`).addEventListener('click', () => {
-      const w = document.getElementById('reply-input-' + d.id);
-      if (w) { w.classList.toggle('open'); if (w.classList.contains('open')) document.getElementById('reply-txt-' + d.id)?.focus(); }
+    if (hasImage) {
+      card.querySelector(".card-img").addEventListener("click", () => openLightbox(p.imageBase64));
+    }
+    card.querySelector(".del").addEventListener("click", () => delSecret(d.id));
+    card.querySelector(".btn-like").addEventListener("click", () => likeSecret(d.id));
+    card.querySelector(`#replyBtn-${d.id}`).addEventListener("click", () => {
+      const w = document.getElementById("reply-input-" + d.id);
+      if (w) { w.classList.toggle("open"); if (w.classList.contains("open")) document.getElementById("reply-txt-" + d.id)?.focus(); }
     });
-    card.querySelector('.btn-share').addEventListener('click', () => shareSecret(d.id, text));
-    card.querySelector(`#pin-${d.id}`).addEventListener('click', () => togglePin(d.id));
-    card.querySelector(`#reply-btn-${d.id}`).addEventListener('click', () => sendReply(d.id));
+    card.querySelector(".btn-share").addEventListener("click", () => shareSecret(d.id, text));
+    card.querySelector(`#pin-${d.id}`).addEventListener("click", () => togglePin(d.id));
+    card.querySelector(`#reply-btn-${d.id}`).addEventListener("click", () => sendReply(d.id));
 
     return card;
   }
 
-  function startReplies(postId) {
-    if (window.__activeReplyListeners?.has(postId)) return;
-    if (!window.__activeReplyListeners) window.__activeReplyListeners = new Set();
-    window.__activeReplyListeners.add(postId);
-
+  // One persistent listener per post — never recreated, survives all re-renders
+  function ensureReplyListener(postId) {
+    if (replyUnsubs[postId]) return; // already live
     const rq = query(collection(db, "secrets", postId, "replies"), orderBy("ts", "asc"));
-    onSnapshot(rq, snap => {
+    replyUnsubs[postId] = onSnapshot(rq, snap => {
       replyCounts[postId] = snap.size;
+
+      // Update reply button wherever it is in the DOM
+      const replyBtn = document.getElementById("replyBtn-" + postId);
+      if (replyBtn) replyBtn.textContent = snap.size > 0 ? `Reply (${snap.size})` : "Reply";
+
+      // Update reply list if the card is rendered
       const list = document.getElementById("replies-list-" + postId);
       if (list) {
         list.innerHTML = "";
@@ -602,12 +633,13 @@
           const ms = r.ts?.toMillis?.() ?? Date.now();
           const item = document.createElement("div");
           item.className = "reply-item";
-          item.innerHTML = `${esc(r.text)}<div class="reply-meta">${timeAgo(ms)}</div>`;
+          item.innerHTML = `${esc(r.text || "")}<div class="reply-meta">${timeAgo(ms)}</div>`;
           list.appendChild(item);
         });
       }
-      const replyBtn = document.getElementById("replyBtn-" + postId);
-      if (replyBtn) replyBtn.textContent = snap.size > 0 ? `Reply (${snap.size})` : "Reply";
+    }, () => {
+      // On error, allow retry next time
+      delete replyUnsubs[postId];
     });
   }
 
@@ -669,24 +701,24 @@
 
   async function likeSecret(postId) {
     const liked = getLiked();
-    if (liked.includes(postId)) return;
+    if (liked.includes(postId)) { showToast("Already liked!"); return; }
     try {
       await updateDoc(doc(db, "secrets", postId), { likes: increment(1) });
       setLiked([...liked, postId]);
       const btn = document.getElementById("like-" + postId);
       if (btn) {
         btn.classList.add("liked");
-        const match = btn.textContent.match(/\d+/);
-        const cur = match ? parseInt(match[0]) : 0;
+        const cur = parseInt((btn.textContent.match(/\d+/) || ["0"])[0]);
         btn.textContent = "Like (" + (cur + 1) + ")";
       }
-    } catch (e) { showToast("Error: " + e.code); }
+    } catch(e) { showToast("Error: " + e.code); }
   }
 
   async function delSecret(id) {
     if (!document.body.classList.contains("admin")) return;
+    if (!confirm("Delete this post? This cannot be undone.")) return;
     try { await deleteDoc(doc(db, "secrets", id)); }
-    catch (e) { showToast("Delete failed: " + e.code); }
+    catch(e) { showToast("Delete failed: " + e.code); }
   }
 
   function togglePin(postId) {
